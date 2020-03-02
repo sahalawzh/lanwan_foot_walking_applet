@@ -1,0 +1,308 @@
+<template>
+  <div class="home-page">
+    <div class="home-page__banner">
+      <image class="xiedian" src="{{ productImg.image }}"></image>
+      
+      <navigator url="./onlineOrder" class="online-order">在线下单</navigator>
+    </div>
+
+    <div class="home-page__list">
+      <div class="cell-title">
+        <image class="cell-title__location" src="../images/location.png"></image>
+        <div class="cell-title__address">{{ currentCity }}</div>
+        <div class="cell-title__tip">当前定位城市</div>
+        <div class="cell-title__footer" @tap.stop="handleToChooseCity">更多测量点</div>
+      </div>
+      <div class="cell-list" v-for="item in locationList" :key="item" @tap="handleOpenShop(item)">
+        <div class="cell-list__header">
+          <div class="tag">{{ item.tag }}</div>
+          <div class="company-name">{{ item.companyName }}</div>
+          <div class="distance">{{ m1.getDistance(item.distance) }}</div>
+        </div>
+        <div class="cell-list__content">
+          <div class="list">
+            <image class="icon" src="../images/clock.png"></image>
+            <div class="info">{{ item.time }}</div>
+          </div>
+          <div class="list">
+            <image class="icon" src="../images/location-gray.png"></image>
+            <div class="info">{{ item.address }}</div>
+            <div class="list-footer">查看详情</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <custom-tabbar tabbar="{{tabbar}}"></custom-tabbar>
+
+  </div>
+</template>
+<wxs module="m1" lang="babel">
+  const getDistance = (distance) => {
+    if (distance >= 1) {
+      return distance.toFixed(2) + 'km'
+    } else if (distance < 1) {
+      return Math.round(distance) * 1000 + 'm'
+    }
+    return distance === 0 ? '' : Math.round(distance) + 'm'
+  }
+  module.exports.getDistance = getDistance
+</wxs>
+<script>
+  import wepy from '@wepy/core'
+  import wxApi from '../api/wxApi'
+  import eventHub from '../common/eventHub'
+  import wxutils from '../utils/wxutils'
+  import store from '../store'
+  import { mapActions } from '@wepy/x'
+
+  wepy.page({
+    store,
+    config: {
+      navigationBarTitleText: '首页'
+    },
+    data: {
+      latitude: '',
+      longitude: '',
+      start: 1,
+      locationList: [],
+      hasMoreData: false,
+      tabbar: {},
+      currentCity: '',
+      productImg: ''
+    },
+    async created () {
+      const that = this
+      // 隐藏系统tabbar
+      wx.hideTabBar()
+      that.tabbar = that.$app.$options.globalData.tabBar
+      wx.getLocation({
+        type: 'wgs84',
+        success (res) {
+          const { latitude, longitude } = res
+          that.latitude = latitude
+          that.longitude = longitude
+          that.getHomeData()
+        },
+        fail (e) {
+          wxApi.getListCity().then(res => {
+            const { latitude, longitude } = Object.values(res)[0][0]
+            that.latitude = latitude
+            that.longitude = longitude
+            that.getHomeData()
+          }).catch(e => {
+            console.log(e)
+          })
+        }
+      })
+      const res = await wxApi.getShowAll()
+      this.productImg = res[0]
+    },
+    attached () {
+      this.$app.editTabbar()
+    },
+    onLoad () {
+      eventHub.$on('fromChooseCitys', res => {
+        this.start = 1
+        this.latitude = res.latitude
+        this.longitude = res.longitude
+        this.getLocationList()
+      })
+    },
+    methods: {
+      handleOpenShop (item) {
+        wxutils.backOrNavigate(`/pages/shopDetail?id=${item.id}`)
+      },
+      ...mapActions({
+        getLocalLocation: 'getLocalLocation'
+      }),
+      handleToChooseCity () {
+        wxutils.backOrNavigate('/pages/citysChoose')
+      },
+      async getLocationList () {
+        let { latitude, longitude, start, locationList } = this
+        const opts = {
+          latitude,
+          longitude,
+          start
+        }
+        const { data, total } = await wxApi.getListLocation(opts)
+        if (start === 1) {
+          locationList = []
+        }
+        this.locationList = locationList.concat(data)
+        this.hasMoreData = total > this.locationList.length
+        if (this.hasMoreData) {
+          this.start++
+        }
+        return this.locationList
+      },
+      getHomeData () {
+        wx.showLoading({
+          title: '加载中',
+          mask: true
+        })
+        Promise.all([this.getLocationList(), this.getLocalLocation()]).then(res => {
+          this.currentCity = res[1]
+          wx.hideLoading()
+        }).catch(err => {
+          console.log(err)
+          wx.hideLoading()
+        })
+      }
+    },
+    onReachBottom () {
+      if (this.hasMoreData) {
+        this.getLocationList()
+      }
+    }
+  })
+  
+</script>
+<config>
+{
+  navigationBarTitleText: '主页',
+  enablePullDownRefresh: true,
+  usingComponents: {
+    "lxzw-stepper": '~@/packages/stepper/index',
+    "custom-tabbar": '~@/customTabBar/index'
+  }
+}
+</config>
+<style lang="less">
+.home-page {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #E7E7E7;
+  &__banner {
+    position: relative;
+    image {
+      width: 100%;
+    }
+    .online-order {
+      position: absolute;
+      left: 50rpx;
+      top: 176rpx;
+      background-color: #1A61CD;
+      width: 204rpx;
+      height: 70rpx;
+      line-height: 70rpx;
+      font-size: 30rpx;
+      color: #fff;
+      border-radius: 32rpx;
+      text-align: center;
+    }
+  }
+  &__list {
+    padding: 0 16rpx;
+    .cell-title {
+      position: relative;
+      display: flex;
+      align-items: center;
+      height: 90rpx;
+      line-height: 90rpx;
+      &__location {
+        width: 25rpx;
+        height: 32rpx;
+        margin-right: 21rpx;
+      }
+      &__address {
+        color: #1A61CD;
+        font-size: 30rpx;
+        margin-right: 32rpx;
+      }
+      &__tip {
+        font-size: 24rpx;
+        color: #999;
+      }
+      &__footer {
+        position: absolute;
+        right: 50rpx;
+        color: #999;
+        font-size: 24rpx;
+      }
+    }
+    .cell-list {
+      padding: 30rpx 26rpx 30rpx 20rpx;
+      background-color: #fff;
+      border-radius: 10rpx;
+      margin-bottom: 16rpx;
+      &__header {
+        position: relative;
+        display: flex;
+        margin-bottom: 24rpx;
+        .tag {
+          height: 44rpx;
+          line-height: 44rpx;
+          padding: 0 12rpx;
+          color: #fff;
+          text-align: center;
+          border-radius: 12rpx;
+          background-color: #1EB1EF;
+          display: inline-block;
+          font-size: 24rpx;
+        }
+        .company-name {
+          margin-left: 16rpx;
+          font-size: 30rpx;
+          color: #333;
+          max-width: 400rpx;
+        }
+        .distance {
+          color: #999;
+          font-size: 24rpx;
+          position: absolute;
+          right: 0;
+        }
+      }
+      &__content {
+        .list {
+          position: relative;
+          display: flex;
+          align-items: center;
+          margin-bottom: 16rpx;
+          &-footer {
+            position: absolute;
+            right: 0;
+            bottom: 0;
+            color: #1A61CD;
+            font-size: 24rpx;
+          }
+        }
+        .icon {
+          width: 24rpx;
+          height: 24rpx;
+          margin-right: 20rpx;
+        }
+        .info {
+          color: #666;
+          font-size: 24rpx;
+        }
+      }
+    }
+  }
+  .address-picker {
+    &__toolbar {
+      height: 80rpx;
+      line-height: 80rpx;
+      display: flex;
+      justify-content: space-between;
+      font-size: 32rpx;
+      text {
+        padding: 0 17rpx;
+      }
+    }
+    &__item {
+      line-height: 72rpx;
+      padding: 0 20rpx;
+      text-align: center;
+    }
+    &__view {
+      color: #4a4a4a;
+    }
+  }
+}
+</style>

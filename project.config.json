@@ -4,7 +4,20 @@
 		"urlCheck": true,
 		"es6": false,
 		"postcss": false,
-		"minified": false
+		"minified": false,
+		"newFeature": true,
+		"coverView": true,
+		"autoAudits": false,
+		"showShadowRootInWxmlPanel": true,
+		"scopeDataCheck": false,
+		"checkInvalidKey": true,
+		"checkSiteMap": true,
+		"uploadWithSourceMap": true,
+		"babelSetting": {
+			"ignore": [],
+			"disablePlugins": [],
+			"outputPath": ""
+		}
 	},
 	"compileType": "miniprogram",
 	"appid": "wx4495d0eb7e4bb59c",
@@ -12,6 +25,150 @@
 	"miniprogramRoot": "weapp/",
 	"simulatorType": "wechat",
 	"simulatorPluginLibVersion": {},
-	"libVersion": "2.10.1",
-	"condition": {}
+	"libVersion": "2.10.2",
+	"condition": {
+		"search": {
+			"current": -1,
+			"list": []
+		},
+		"conversation": {
+			"current": -1,
+			"list": []
+		},
+		"plugin": {
+			"current": -1,
+			"list": []
+		},
+		"game": {
+			"list": []
+		},
+		"gamePlugin": {
+			"current": -1,
+			"list": []
+		},
+		"miniprogram": {
+			"current": -1,
+			"list": [
+				{
+					"id": 0,
+					"name": "授权",
+					"pathName": "pages/auth",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": 1,
+					"name": "在线下单",
+					"pathName": "pages/onlineOrder",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": 2,
+					"name": "主页",
+					"pathName": "pages/home",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": 3,
+					"name": "我的",
+					"pathName": "pages/mine",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": 4,
+					"name": "选择脚型数据",
+					"pathName": "pages/selectFootShapeList",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "脚型数据",
+					"pathName": "pages/footShape",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "我的订单",
+					"pathName": "pages/myOrder",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": 7,
+					"name": "门店详情",
+					"pathName": "pages/shopDetail",
+					"query": "id=4",
+					"scene": null
+				},
+				{
+					"id": 8,
+					"name": "物流信息",
+					"pathName": "pages/logistics",
+					"query": "orderNo=10788202002271108564329",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "城市选择",
+					"pathName": "pages/citysChoose",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "脚型列表",
+					"pathName": "pages/footShapeList",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "下单",
+					"pathName": "pages/reserver",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "地址管理",
+					"pathName": "pages/address",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "脚型列表数据",
+					"pathName": "pages/footShapeList",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "成功页面",
+					"pathName": "pages/success",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "订单列表",
+					"pathName": "pages/myOrder",
+					"query": "",
+					"scene": null
+				},
+				{
+					"id": -1,
+					"name": "门店详情",
+					"pathName": "pages/shopDetail",
+					"query": "id=1",
+					"scene": null
+				}
+			]
+		}
+	}
 }

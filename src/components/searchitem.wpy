@@ -1,0 +1,281 @@
+<style lang="less">
+.search-list {
+  padding-bottom: 150rpx;
+  .search-box {
+    padding: 20rpx 48rpx;
+    background-color: #fff;
+    .search-control {
+      height:70rpx;
+      line-height: 70rpx;
+      background-color:rgba(238,238,238,1);
+      border-radius:35rpx;
+      padding-left: 34rpx;
+      font-size: 30rpx;
+    }
+  }
+  .groups {
+    .group-item {
+      position: relative;
+      margin-top: 15rpx;
+      padding: 0 50rpx 36rpx;
+      background-color: #fff;
+      &__hd {
+        position: relative;
+        display: flex;
+        align-items: center;
+        height: 96rpx;
+        line-height: 96rpx;
+        &::after {
+          position: absolute;
+          content: "";
+          height: 1rpx;
+          width: 100%;
+          left: 0;
+          bottom: 0;
+          transform: scaleY(0.5);
+          background-color: #eee;
+        }
+        .radio-default {
+          position: relative;
+          width: 36rpx;
+          height: 36rpx;
+          border-radius: 50%;
+          border: 1rpx solid #ccc;
+          margin-right: 18rpx;
+          .radio-check {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+          }
+        }
+        .tag {
+          width:120rpx;
+          height:43rpx;
+          line-height: 43rpx;
+          background:rgba(30,177,239,1);
+          border-radius:10rpx;
+          color: #fff;
+          font-size: 24rpx;
+          text-align: center;
+        }
+        .company-name {
+          margin-left: 16rpx;
+          font-size: 30rpx;
+          color: #333;
+        }
+        .arrow {
+          position: absolute;
+          right: 0;
+          width: 14rpx;
+          height: 14rpx;
+          border-top: 3rpx solid #999;
+          border-right: 3rpx solid #999;
+          transform: rotate(45deg);
+        }
+      }
+      &__bd {
+        color: #333;
+        font-size: 24rpx;
+        .info {
+          font-size: 28rpx;
+          display: flex;
+          justify-content: space-between;
+          margin: 22rpx 0 32rpx;
+          .name {
+            margin-right: 40rpx;
+          }
+        }
+        .result-title {
+          padding-bottom: 4rpx
+        }
+        .result-info {
+          margin-top: 16rpx;
+          text {
+            margin-left: 44rpx;
+          }
+        }
+      }
+    }
+    .empty-box {
+      text-align: center;
+      .empty-icon {
+        width: 112rpx;
+        height: 240rpx;
+        margin-top: 114rpx;
+      }
+      &__line {
+        font-size: 28rpx;
+        color: #999;
+        margin-top: 90rpx;
+      }
+      &__point {
+        color: #1A5DE1;
+        font-size: 28rpx;
+        padding-bottom: 2rpx;
+        border-bottom: 1rpx solid #1A5DE1;
+        display: inline-block;
+        margin-top: 23rpx;
+      }
+    }
+  }
+}
+</style>
+<template>
+  <div class="search-list">
+    <div class="search-box">
+      <input type="text" confirm-type="search" bindconfirm="handleToSearch" class="search-control" placeholder="搜索姓名">
+    </div>
+    <div class="groups">
+      <template v-if="scanList.length">
+        <div class="group-item" v-for="(item, index) in scanList" :key="index">
+          <div class="group-item__hd" @tap.stop="handleToDetailOrCheck(item, index)">
+            <div class="radio-default" v-if="hasRadio">
+              <image class="radio-check" src="../images/radio-check.png" v-if="item.isCheck"></image>
+            </div>
+            <div class="tag">{{ item.tag }}</div>
+            <div class="company-name">{{ item.companyName }}</div>
+            <div class="arrow" v-if="!hasRadio"></div>
+          </div>
+          <div class="group-item__bd">
+            <div class="info">
+              <div class="name">{{ item.userName }}</div>
+              <div class="">检测日期：{{ item.scanTime }}</div>
+            </div>
+            <div class="result-title">诊断结果</div>
+            <div class="result-info">左脚<text>{{ item.leftFooterResult }}</text></div>
+            <div class="result-info">右脚<text>{{ item.rightFooterResult }}</text></div>
+          </div>
+        </div>
+
+      </template>
+      
+      <div class="empty-box" v-else>
+        <image src="../images/empty-shape.png" class="empty-icon"></image>
+        <div class="empty-box__line">还没有测量的脚型数据</div>
+        <navigator open-type="switchTab" url="../pages/home" class="empty-box__point">查看附近测量点</navigator>
+      </div>
+      
+    </div>
+  </div>
+</template>
+<script>
+  import wepy from '@wepy/core'
+  import wxApi from '../api/wxApi'
+  import store from '../store'
+  import { mapState, mapMutations } from '@wepy/x'
+  import wxutils from '../utils/wxutils'
+
+  const ArchPattern = {
+    NormalArch: '正常足弓',
+    FlatArch: '扁平足',
+    HighArch: '高足弓'
+  }
+
+  const FootStyle = {
+    RomanFoot: '罗马脚',
+    EgyptFoot: '埃及脚',
+    GreeceFoot: '希腊脚',
+    SquareFoot: '方形脚'
+  }
+  wepy.component({
+    store,
+    props: {
+      hasRadio: Boolean
+    },
+    data: {
+      scanList: [],
+      phone: ''
+    },
+    computed: {
+      ...mapState({
+        currentScanItem: 'currentScanItem'
+      })
+    },
+    created () {
+      let loginInfo = getApp().$wepy.$options.globalData.userInfo
+      this.phone = loginInfo.phone
+      this.getScanList()
+    },
+    watch: {
+      scanList (val) {
+        if (val) {
+          this.$emit('scan-data', this.scanList)
+        }
+      }
+    },
+    methods: {
+      ...mapMutations({
+        updateKey: 'updateKey'
+      }),
+      handleToDetailOrCheck (item, index) {
+        if (this.hasRadio) {
+          this.scanList.forEach(item => {
+            item.isCheck = false
+          })
+          this.scanList[index].isCheck = true
+        } else {
+          this.updateKey({
+            key: 'currentScanItem',
+            val: item
+          })
+          wxutils.backOrNavigate('/pages/footShape')
+        }
+      },
+      handleScanData (data) {
+        let result = []
+        data && data.length && data.forEach(item => {
+          item.jsonData = JSON.parse(item.jsonData)
+          const [ leftFoot, rightFoot ] = item.jsonData
+          item.leftFooterResult = ArchPattern[leftFoot.ArchPattern] + ' ' + FootStyle[leftFoot.FootStyle]
+          item.rightFooterResult = ArchPattern[rightFoot.ArchPattern] + ' ' + FootStyle[rightFoot.FootStyle]
+          if (this.hasRadio) {
+            item.isCheck = false
+            if (this.currentScanItem && item.id === this.currentScanItem.id) {
+              item.isCheck = true
+            }
+          }
+          result.push(item)
+        })
+        return result
+      },
+      async getScanList () {
+        try {
+          wx.showLoading({
+            title: '加载中',
+            mask: true
+          })
+          const params = {
+            phone: this.phone
+          }
+          const res = await wxApi.getScanResultByPhone(params)
+          this.scanList = this.handleScanData(res)
+          wx.hideLoading()
+        } catch (error) {
+          console.log(error)
+          wx.hideLoading()
+        }
+      },
+      async handleToSearch (e) {
+        const { value } = e.$wx.detail
+        if (!value) this.getScanList()
+        try {
+          wx.showLoading({
+            title: '加载中',
+            mask: true
+          })
+          const params = {
+            username: value
+          }
+          const res = await wxApi.getScanResultByUsername(params)
+          this.scanList = this.handleScanData(res)
+          wx.hideLoading()
+        } catch (error) {
+          console.log(error)
+          wx.hideLoading()
+        }
+      }
+    }
+  });
+</script>

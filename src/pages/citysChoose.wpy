@@ -1,0 +1,160 @@
+<template>
+  <div class="city-container" ref="hotelCitycontainer">
+    <!-- 城市索引 -->
+    <div class="float_word" id="current_city">
+      <text v-for="(item, index) in allCitys" :key="index" @click.stop="handleToHref(index)" class="float_span">{{index}}</text>
+    </div>
+
+    <div class="cell-header">
+      <image class="cell-header__location" src="../images/location.png"></image>
+      <div class="cell-header__address">{{ currentCity }}</div>
+      <div class="cell-header__tip">当前定位城市</div>
+    </div>
+
+    <div class="city-list">
+      <div class="city-list__item"
+          v-for="(item, value) in allCitys" :key="item">
+        <div class="city-list__item_word" :id="value">{{ value }}</div>
+        <div v-for="(item1, index1) in item"
+            :key="index1"
+            class="city-list__item_value">
+          <div @click="getChooseCityVal(item1)">{{ item1.city }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+<config>
+{
+  navigationBarTitleText: '选择城市'
+}
+</config>
+<script>
+  import wepy from '@wepy/core'
+  import wxApi from '../api/wxApi'
+  import eventHub from '../common/eventHub'
+  import store from '../store'
+  import { mapActions } from '@wepy/x'
+  
+  wepy.page({
+    store,
+    created () {
+      this.getListCity()
+      this.getLocalLocation().then(res => {
+        this.currentCity = res
+      })
+    },
+    data: {
+      allCitys: [],
+      currentCity: ''
+    },
+    methods: {
+      ...mapActions({
+        getLocalLocation: 'getLocalLocation'
+      }),
+      getChooseCityVal (item) {
+        eventHub.$emit('fromChooseCitys', item)
+        wx.navigateBack()
+      },
+      // 滚动 伪锚点链接
+      href (index) {
+        if (document.getElementById(index)) {
+          let height = document.getElementById(index).offsetTop - document.getElementById("current_city").offsetHeight || 0
+          this.$refs.hotelCitycontainer.scrollTo(0, height)
+        }
+      },
+      async getListCity () {
+        try {
+          wx.showLoading({
+            title: '加载中',
+            mask: true
+          })
+          const res = await wxApi.getListCity()
+          this.allCitys = res
+          wx.hideLoading()
+        } catch (error) {
+          console.log(error)
+          wx.hideLoading()
+        }
+      }
+    }
+  })
+</script>
+<style lang="less" scoped>
+.city-container {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  .float_word {
+    position: absolute;
+    top: 30rpx;
+    right: 0;
+    z-index: 99;
+    width: 44rpx;
+    height: 1032rpx;
+    font-size: 30rpx;
+    box-sizing: border-box;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    .float_span {
+      display: block;
+      margin-bottom: 30rpx;
+      line-height: 1;
+      color: #666;
+    }
+  }
+  .cell-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    height: 120rpx;
+    padding-left: 44rpx;
+    &__location {
+      width: 26rpx;
+      height: 32rpx;
+    }
+    &__address {
+      padding-left: 20rpx;
+      padding-right: 34rpx;
+      font-size: 28rpx;
+      color: #1A61CD;
+    }
+    &__tip {
+      font-size: 24rpx;
+      color: #999;
+    }
+  }
+  .city-list {
+    &__item {
+      &_word {
+        padding: 10rpx 0 10rpx 30rpx;
+        position: relative;
+        font-size: 28rpx;
+        background-color: #F6F6F6;
+        color: #999;
+      }
+      &_value {
+        height: 100rpx;
+        line-height: 100rpx;
+        position: relative;
+        padding-left: 80rpx;
+        &:not(:last-child)::after {
+          content: '';
+          transform: scaleY(0.5);
+          width: 100%;
+          position: absolute;
+          bottom: 0;
+          left: 0;
+          height: 1rpx;
+          width: 100%;
+          background-color: #eee;
+        }
+      }
+    }
+  }
+}
+</style>
+

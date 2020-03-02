@@ -1,0 +1,252 @@
+<template>
+  <div class="foot-shape">
+    <div class="foot-shape__header">
+      <div class="cell-item company-name"><text class="tag">{{ currentScanItem.tag }}</text>{{ currentScanItem.companyName }}</div>
+      <div class="cell-item address-info">
+        <image class="location-icon" src="../images/location-gray.png"></image>
+        <text>{{ currentScanItem.address }}</text>
+      </div>
+      <div class="cell-arrow"></div>
+    </div>
+
+
+    <div class="foot-shape__content">
+      <div class="table-header">
+        <div>姓名： {{ currentScanItem.userName }}</div>
+        <div>检测日期：{{ currentScanItem.scanTime }}</div>
+      </div>
+      <div class="result-info">
+        <div class="title">诊断结果</div>
+        <div class="content">
+          <div class="content-txt">左脚 <text>{{ currentScanItem.leftFooterResult }}</text></div>
+          <div>右脚 <text>{{ currentScanItem.rightFooterResult }}</text></div>
+        </div>
+      </div>
+      <div class="table-content">
+        <div class="table-content__tr">
+          <div class="table-th">详细数据</div>
+          <div class="table-th">左脚</div>
+          <div class="table-th">右脚</div>
+        </div>
+        <div class="table-content__tr">
+          <div class="table-td">脚长（mm）</div>
+          <div class="table-td">{{ currentScanItem.jsonData[0].feetLength }}</div>
+          <div class="table-td">{{ currentScanItem.jsonData[1].feetLength }}</div>
+        </div>
+        <div class="table-content__tr">
+          <div class="table-td">脚宽（mm）</div>
+          <div class="table-td">{{ currentScanItem.jsonData[0].feetWidth }}</div>
+          <div class="table-td">{{ currentScanItem.jsonData[1].feetWidth }}</div>
+        </div>
+        <div class="table-content__tr">
+          <div class="table-td">跖趾围长（mm）</div>
+          <div class="table-td">{{ currentScanItem.jsonData[0].plantarCircumference }}</div>
+          <div class="table-td">{{ currentScanItem.jsonData[1].plantarCircumference }}</div>
+        </div>
+        <div class="table-content__tr">
+          <div class="table-td">前跗骨围长（mm）</div>
+          <div class="table-td">{{ currentScanItem.jsonData[0].tarsalCircumference }}</div>
+          <div class="table-td">{{ currentScanItem.jsonData[1].tarsalCircumference }}</div>
+        </div>
+        <div class="table-content__tr">
+          <div class="table-td">兜根围长（mm）</div>
+          <div class="table-td">{{ currentScanItem.jsonData[0].heelCircumference }}</div>
+          <div class="table-td">{{ currentScanItem.jsonData[1].heelCircumference }}</div>
+        </div>
+        <div class="table-content__tr">
+          <div class="table-td">腰围围度（mm）</div>
+          <div class="table-td">{{ currentScanItem.jsonData[0].waistCircumference }}</div>
+          <div class="table-td">{{ currentScanItem.jsonData[1].waistCircumference }}</div>
+        </div>
+        <div class="table-content__tr">
+          <div class="table-td">背围围度（mm）</div>
+          <div class="table-td">{{ currentScanItem.jsonData[0].instepCircumferenceY }}</div>
+          <div class="table-td">{{ currentScanItem.jsonData[1].instepCircumferenceY }}</div>
+        </div>
+        <div class="table-content__tr">
+          <div class="table-td">踝围围长（mm）</div>
+          <div class="table-td">{{ currentScanItem.jsonData[0].ankleCircumference }}</div>
+          <div class="table-td">{{ currentScanItem.jsonData[1].ankleCircumference }}</div>
+        </div>
+        <div class="table-content__tr">
+          <div class="table-td">足弓高度（mm）</div>
+          <div class="table-td">{{ currentScanItem.jsonData[0].footArchHgt }}</div>
+          <div class="table-td">{{ currentScanItem.jsonData[1].footArchHgt }}</div>
+        </div>
+      </div>
+      <image class="lwzx-logo" src="../images/lwzx-logo.png"></image>
+      <div class="btn-box">
+        <button plain="true" @tap.stop="handleToMake">
+          我要定制
+        </button>
+      </div>
+    </div>
+
+
+  </div>
+</template>
+<config>
+{
+  navigationBarTitleText: '脚型数据'
+}
+</config>
+<script>
+  import wepy from '@wepy/core'
+  import store from '../store'
+  import { mapState } from '@wepy/x'
+  import wxutils from '../utils/wxutils'
+
+  wepy.page({
+    store,
+    data: {
+      loginStatus: 0
+    },
+    computed: {
+      ...mapState({
+        currentScanItem: 'currentScanItem'
+      })
+    },
+    methods: {
+      handleToMake () {
+        wxutils.backOrNavigate('/pages/onlineOrder')
+      }
+    }
+  })
+</script>
+<style lang="less" scoped>
+.foot-shape {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #E7E7E7;
+  &__header {
+    padding: 35rpx 55rpx 30rpx 50rpx;
+    background-color: #fff;
+    .cell-item {
+      display: flex;
+      align-items: center;
+    }
+    .company-name {
+      font-size: 30rpx;
+      color: #333;
+      margin-bottom: 16rpx;
+    }
+    .address-info {
+      font-size: 24rpx;
+      color: #666;
+    }
+    .tag {
+      height: 44rpx;
+      line-height: 44rpx;
+      padding: 0 12rpx;
+      color: #fff;
+      text-align: center;
+      border-radius: 12rpx;
+      background-color: #1EB1EF;
+      display: inline-block;
+      font-size: 24rpx;
+      margin-right: 16rpx;
+    }
+    .location-icon {
+      width: 24rpx;
+      height: 30rpx;
+      margin-right: 10rpx;
+    }
+    .cell-arrow {
+      position: absolute;
+      right: 55rpx;
+      top: 76rpx;
+      width: 14rpx;
+      height: 14rpx;
+      border-top: 3rpx solid #999;
+      border-right: 3rpx solid #999;
+      transform: rotate(45deg);
+    }
+  }
+  &__content {
+    padding: 0 52rpx;
+    margin-top: 16rpx;
+    background-color: #fff;
+    .table-header {
+      position: relative;
+      height: 98rpx;
+      line-height: 98rpx;
+      display: flex;
+      justify-content:space-between;
+      font-size: 28rpx;
+      color: #333;
+      &::after {
+        position: absolute;
+        content: "";
+        height: 1rpx;
+        width: 100%;
+        left: 0;
+        bottom: 0;
+        transform: scaleY(0.5);
+        background-color: #eee;
+      }
+    }
+    .result-info {
+      font-size: 24rpx;
+      color: #333;
+      .title {
+        margin: 24rpx 0 22rpx;
+      }
+      .content {
+        margin-bottom: 52rpx;
+        &-txt {
+          margin-bottom: 14rpx;
+        }
+      }
+    }
+  }
+  .table-content {
+    font-size: 24rpx;
+    &__tr {
+      display: flex;
+      align-items: center;
+      .table-th:nth-child(1),
+      .table-td:nth-child(1) {
+        width: 218rpx;
+        padding-left: 5rpx;
+        box-sizing: border-box;
+      }
+      .table-th:nth-child(2),
+      .table-td:nth-child(2),
+      .table-th:nth-child(3),
+      .table-td:nth-child(3) {
+        text-align: center;
+        flex: 1;
+        margin: 12rpx 0;
+      }
+      .table-td:nth-child(2) {
+        border-right: 1rpx solid #ccc;
+      }
+      &:nth-child(even) {
+        background-color: #F6F6F6;
+      }
+    }
+  }
+  .lwzx-logo {
+    width: 144rpx;
+    height: 92rpx;
+    margin: 28rpx auto 37rpx;
+    display: block;
+  }
+  .btn-box {
+    button {
+      height: 80rpx;
+      line-height: 80rpx;
+      border:none;
+      font-size: 36rpx;
+      color: #fff;
+      background-color:rgba(26,93,225,1);
+      border-radius:40rpx;
+      margin-bottom: 24rpx;
+    }
+  }
+}
+</style>
+

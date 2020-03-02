@@ -1,0 +1,117 @@
+<template>
+  <div class="shop-conatiner">
+    <div class="shop-header">
+      <div class="company-name">{{ storeDetail.companyName }}</div>
+      <div class="shop-header__content">
+        <div class="item-row">
+          <div class="item-label">营业时间：</div>
+          <div class="item-value">{{ storeDetail.businessDays[0] }} {{ storeDetail.businessHours[0] }} {{ storeDetail.businessDays[1] }} {{ storeDetail.businessHours[1] }} {{ storeDetail.businessDays[2] }} {{ storeDetail.businessHours[2] }}</div>
+        </div>
+        <div class="item-row">
+          <div class="item-label">测量地址：</div>
+          <div class="item-value">{{ storeDetail.address }}</div>
+        </div>
+      </div>
+
+    </div>
+    <div class="shop-map">
+      <div class="shop-map__wrap">
+        <div class="title">门店地图</div>
+        <div>
+          <map class="map" :longitude="storeDetail.longitude" :latitude="storeDetail.latitude"></map>
+        </div>
+      </div>
+    </div>
+  </div>  
+</template>
+<config>
+{
+  navigationBarTitleText: '门店详情'
+}
+</config>
+<script>
+  import wepy from '@wepy/core'
+  import wxApi from '../api/wxApi'
+
+  wepy.page({
+    data: {
+      addressId: '',
+      storeDetail: ''
+    },
+    onLoad ({ id }) {
+      this.addressId = id
+      this.getLocationDetail()
+    },
+    methods: {
+      async getLocationDetail () {
+        try {
+          wx.showLoading({
+            title: '加载中',
+            mask: true
+          })
+          const opts = {
+            id: this.addressId
+          }
+          const res = await wxApi.getLocationDetail(opts)
+          this.storeDetail = res
+          console.log(this.storeDetail)
+          wx.hideLoading()
+        } catch (error) {
+          console.log(error)
+          wx.hideLoading()
+        }
+      }
+    }
+  })
+</script>
+<style lang="less" scoped>
+.shop-conatiner {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  .shop-header {
+    padding: 40rpx 44rpx 24rpx 44rpx;
+    .company-name {
+      font-size: 30rpx;
+      color: #333;
+      margin-bottom: 26rpx;
+    }
+    &__content {
+      .item-row {
+        position: relative;
+        font-size: 24rpx;
+        color: #666;
+        margin-bottom: 16rpx;
+        .item-label {
+          position: absolute;
+          left: 0;
+        }
+        .item-value {
+          padding-left: 124rpx;
+        }
+      }
+    }
+  }
+  .shop-map {
+    position: relative;
+    padding-top: 15rpx;
+    background-color: #f6f7f7;
+    &__wrap {
+      background-color: #fff;
+      .title {
+        height: 86rpx;
+        line-height: 86rpx;
+        padding-left: 48rpx;
+        font-size: 30rpx;
+        color: #333;
+      }
+      .map {
+        width: 100%;
+        height: 550rpx;
+      }
+    }
+  }
+}
+</style>

@@ -1,0 +1,225 @@
+<template>
+  <div class="page-logistics">
+    <div class="logistics-header">
+      <div class="logistics-product">
+        
+        <div class="logistics-product__status" v-if="logistics.state === '2'">运输中</div>
+        <div class="logistics-product__status" v-else-if="logistics.state === '3'">已签收</div>
+        <div class="logistics-product__status" v-else-if="logistics.state === '4'">问题件</div>
+
+      </div>
+      <div class="logistics-company">
+        <div class="logistics-company__info">
+          <div class="label">{{ logistics.company }}</div>
+          <div v-if="logistics.expPhone">官方电话 {{ logistics.expPhone }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="logistics-content">
+      <div class="logistics-content__detail">
+        <div class="logistics-content__item" v-for="(item, index) in logistics.traces" :key="index" :class="{'active': index === 0}">
+
+          <div class="time">
+            <div class="time-day">{{ item.date }}</div>
+            <div class="time-detail">{{ item.time }}</div>
+          </div>
+          
+          <div class="logo">
+            <div class="logo-circle">
+              <div class="logo-circle__default"></div>
+            </div>
+            <image class="logo-circle__active" v-if="index === 0" src="../images/ico_logistics.png" mode="aspectFill"></image>
+          </div>
+
+          <div class="info">{{ item.AcceptStation }}</div>
+        </div>
+        
+      </div>
+    </div>
+  </div> 
+</template>
+<config>
+{
+  navigationBarTitleText: '查看物流'
+}
+</config>
+<script>
+  import wepy from '@wepy/core'
+  import wxApi from '../api/wxApi'
+
+  wepy.page({
+    data: {
+      logistics: ''
+    },
+    onLoad ({ orderNo }) {
+      this.orderNo = orderNo
+      this.getLogistics()
+    },
+    methods: {
+      async getLogistics () {
+        try {
+          wx.showLoading({
+            title: '加载中',
+            mask: true
+          })
+          const {  orderNo } = this
+          const opts = {
+            orderNo
+          }
+          const res = await wxApi.getLogisticsMessage(opts)
+          res.traces && res.traces.forEach(element => {
+            let deteTime = element.AcceptTime.split(' ')
+            element.date = deteTime[0]
+            element.time = deteTime[1]
+          })
+          this.logistics = res
+          wx.hideLoading()
+        } catch (error) {
+          console.log(error)
+          wx.hideLoading()
+        }
+      }
+    }
+  })
+</script>
+<style lang="less" scoped>
+.page-logistics {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f6f7f7;
+  .logistics-header {
+    background-color: #fff;
+    margin: 20rpx 12rpx;
+    padding: 24rpx 34rpx 24rpx 38rpx;
+    border-radius: 8rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logistics-product {
+    display: flex;
+    align-items: center;
+    &__img {
+      width: 86rpx;
+      height: 70rpx;
+      border-radius: 8rpx;
+      margin-right: 20rpx;
+    }
+    &__status {
+      color: #4a4a4a;
+      font-weight: 600;
+      font-size: 32rpx;
+    }
+  }
+  .logistics-company {
+    display: flex;
+    align-items: center;
+    &__info {
+      color: #4a4a4a;
+      margin-right: 16rpx;
+      text-align: right;
+      font-size: 24rpx;
+      .label {
+        font-weight: 600;
+        font-size: 26rpx;
+      }
+    }
+    &__icon {
+      width: 68rpx;
+      height: 68rpx;
+    }
+  }
+  .logistics-content {
+    margin: 0 12rpx;
+    background-color: #fff;
+    border-radius: 12rpx;
+    &__detail {
+      position: relative;
+      padding-top: 52rpx;
+      padding-bottom: 46rpx;
+    }
+    &__item {
+      position: relative;
+      padding: 0 30rpx 0 200rpx;
+      color: #4a4a4a;
+      display: flex;
+      .logo {
+        position: relative;
+        margin-top: 10rpx;
+        &-circle {
+          position: relative;
+          width: 10rpx;
+          height: 10rpx;
+          border-radius: 50%;
+          border: 1rpx solid #d7d7d7;
+          box-sizing: border-box;
+          &__default {
+            position: absolute;
+            top: 3rpx;
+            left: 3rpx;
+            width: 4rpx;
+            height: 4rpx;
+            border-radius: 50%;
+            background-color: #d7d7d7;
+            z-index: 11;
+          }
+        }
+      }
+      &:not(:last-child) .logo::after {
+        position: absolute;
+        content: "";
+        width: 1rpx;
+        left: 50%;
+        top: 16rpx;
+        bottom: 0;
+        background-color: #d7d7d7;
+        transform: translate(-50%, 0) scale(0.5, 1);
+        z-index: 8;
+      }
+      .info {
+        margin-bottom: 40rpx;
+        margin-left: 14rpx;
+      }
+      .time {
+        position: absolute;
+        left: 36rpx;
+        text-align: right;
+        line-height: 28rpx;
+        &-day {
+          margin-bottom: 2rpx;
+          font-size: 24rpx;
+        }
+        &-detail {
+          font-size: 22rpx;
+        }
+      }
+      &.active {
+        .time-day, .info {
+          color: #373737;
+          font-weight: 600;
+        }
+        .info {
+          font-size: 26rpx;
+          padding-left: 30rpx;
+        }
+        .logo-circle {
+          &__active {
+            position: absolute;
+            left: -16rpx;
+            top: -10rpx;
+            width: 44rpx;
+            height: 44rpx;
+            z-index: 12;
+            padding-bottom: 4rpx;
+            background-color: #fff;
+          }
+        }
+      }
+    }
+  }
+}
+</style>

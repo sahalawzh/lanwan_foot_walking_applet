@@ -1,0 +1,299 @@
+<template>
+  <div class="order-container">
+    <div class="order-list" v-if="orderList.length">
+      <div class="order-item" v-for="item in orderList" :key="item">
+        <div class="order-item__bd">
+          <image class="product-img" src="{{ item.image }}"></image>
+          <div class="product-content">
+            <elip line="1" class="product-name">{{ item.name }}</elip>
+            
+            <div class="product-price">￥{{ item.price }} <text class="product-unit">x{{ item.num }}</text></div>
+            <div class="user-name">{{ item.consignee }}<text class="time">{{ item.scanTime }}</text></div>
+            <div class="spec-list">
+              <div class="spec-list__item">{{ item.sizeName }}</div>
+              <div class="spec-list__item">{{ item.functionName }}</div>
+              <div class="spec-list__item">{{ item.shoeName }}</div>
+            </div>
+          </div>
+        </div>
+        <div class="order-item__ft">
+          <div class="order-no">{{ item.orderNo }}</div>
+          <div class="order-info">
+            <div class="order-info__time">下单时间：{{ item.createTime }}</div>
+            <div class="order-info__price">￥{{ item.totalPrice }}</div>
+          </div>
+          <div class="order-status">
+            
+            <image class="icon-status" v-if="item.orderProcess >= 0" src="../images/ico_status_{{item.orderProcess}}.png" mode="aspectFill"></image>
+
+            <div class="order-btn">
+              <block v-if="item.orderProcess === 0">
+                <div class="order-btn__text" @tap="handleToDelete(item.orderNo, index)">删除订单</div>
+                <div class="order-btn__3" @tap="handleToPay(item.orderNo)">立即支付</div>
+              </block>
+              <div class="order-btn__2" v-else-if="item.orderProcess === 1">鞋垫制作中，待发货</div>
+              <div class="order-btn__1" @tap="handleToLogistics(item.orderNo)" v-else-if="item.orderProcess === 2">查看物流</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="order-empty" v-else>
+      <image class="icon" src="../images/ico_order_empty.png" mode="aspectFill"></image>
+      <div class="font-size--26">您还没有订单哦~</div>
+    </div>
+  </div>
+</template>
+<script>
+  import wepy from '@wepy/core'
+  import wxApi from '../api/wxApi'
+  import wxutils from '../utils/wxutils'
+
+  wepy.page({
+    config: {
+      navigationBarTitleText: '注册/绑定'
+    },
+    data: {
+      orderProcess: '-1',
+      start: 1,
+      limits: 5,
+      orderList: [],
+      hasMoreData: false
+    },
+    created () {
+      this.getOrderList()
+    },
+    methods: {
+      handleToDelete (orderNo, index) {
+        const that = this
+        wx.showModal({
+          title: '提示',
+          content: '您确定删除该订单',
+          success(res) {
+            if (res.confirm) {
+              wxApi.postDeleteOrder({ orderNo }).then(res => {
+                wx.showToast({title: '删除成功'})
+                that.orderList.splice(index, 1)
+              }).catch(e => {
+                console.log(e)
+                wx.showToast({title: '删除失败'})
+              })
+            }
+          }
+        })
+      },
+      handleToLogistics (orderNo) {
+        wxutils.backOrNavigate(`/pages/logistics?orderNo=${orderNo}`)
+      },
+      async handleToPay (orderNo) {
+        try {
+          wx.showLoading({
+            title: '拉起支付中',
+            mask: true
+          })
+          const args = {
+            orderNo,
+            device: 1
+          }
+          const params = await wxApi.postWxPay(args)
+          wxutils.wxPay(params).then(function () {
+            wx.redirectTo({
+              url: '/pages/success?oid=' + orderNo
+            })
+          }).catch(function (e) {
+            console.log(e)
+          })
+          wx.hideLoading()
+        } catch (error) {
+          console.log(error)
+          wx.hideLoading()
+        }
+      },
+      async getOrderList () {
+        try {
+          wx.showLoading({
+            title: '加载中',
+            mask: true
+          })
+          let { orderProcess, start, limits, orderList } = this
+          const opts = {
+            orderProcess,
+            start,
+            limits
+          }
+          const { data, total } = await wxApi.getSearchOrder(opts)
+          if (start === 1) {
+            orderList = []
+          }
+          this.orderList = orderList.concat(data)
+          this.hasMoreData = total > this.orderList.length
+          console.log(this.orderList)
+          if (this.hasMoreData) {
+            this.start++
+          }
+          wx.hideLoading()
+        } catch (error) {
+          console.log(error)
+          wx.hideLoading()
+        }
+      }
+    },
+    onReachBottom () {
+      if (this.hasMoreData) {
+        this.getOrderList()
+      }
+    }
+  })
+</script>
+<style lang="less">
+.order-container {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #E7E7E7;
+  .order-list {
+    padding: 20rpx 15rpx 28rpx;
+    .order-item {
+      border-radius: 10rpx;
+      margin-bottom: 15rpx;
+      background-color: #fff;
+      padding: 30rpx 36rpx 20rpx;
+      &__bd {
+        position: relative;
+        &::after {
+          position: absolute;
+          content: "";
+          height: 1rpx;
+          width: 100%;
+          left: 0;
+          bottom: 0;
+          transform: scaleY(0.5);
+          background-color: #eee;
+        }
+        .product-img {
+          position: absolute;
+          left: 0;
+          top: 0;
+          width: 190rpx;
+          height: 160rpx;
+          border-radius: 6rpx;
+        }
+        .product-content {
+          padding-left: 224rpx;
+          .product-name {
+            font-size: 36rpx;
+            color: #666;
+          }
+          .product-price {
+            font-size: 30rpx;
+            color: #333;
+            margin: 26rpx 0 24rpx;
+            .product-unit {
+              font-size: 24rpx;
+              margin-left: 18rpx;
+              color: #999;
+            }
+          }
+          .user-name {
+            font-size: 24rpx;
+            color: #999;
+            margin-bottom: 22rpx;
+            .time {
+              margin-left: 26rpx;
+            }
+          }
+          .spec-list {
+            font-size: 24rpx;
+            color: #999;
+            padding-bottom: 6rpx;
+            &__item {
+              margin-bottom: 14rpx;
+            }
+          }
+        }
+      }
+      &__ft {
+        font-size: 24rpx;
+        color: #999;
+        .order-no {
+          margin-top: 22rpx;
+        }
+        .order-info {
+          margin-top: 12rpx;
+          margin-bottom: 36rpx;
+          display: flex;
+          align-items: center;
+          justify-content:space-between;
+          &__price {
+            font-size: 30rpx;
+            color: #333;
+          }
+        }
+        .order-status {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          .icon-status {
+            width: 150rpx;
+            height: 50rpx;
+          }
+          .order-btn {
+            display: flex;
+            align-items: center;
+            &__1 {
+              width: 170rpx;
+              height: 60rpx;
+              line-height: 60rpx;
+              text-align: center;
+              border-radius: 30rpx;
+              color: #1A61CD;
+              border: 1rpx solid #1A61CD;
+            }
+            &__2 {
+              font-size: 28rpx;
+              color: #333;
+            }
+            &__text {
+              font-size: 28rpx;
+              color: #666;
+              margin-right: 36rpx;
+            }
+            &__3 {
+              width:170rpx;
+              height:60rpx;
+              line-height: 60rpx;
+              text-align: center;
+              background:rgba(26,93,225,1);
+              border-radius:30rpx;
+              color: #fff;
+            }
+          }
+        }
+      }
+    }
+  }
+  .order-empty {
+    background-color: #fff;
+    color: #4a4a4a;
+    text-align: center;
+    .icon {
+      width: 136rpx;
+      height: 136rpx;
+      margin-top: 52rpx;
+      margin-bottom: 56rpx;
+    }
+  }
+}
+</style>
+<config>
+{
+  navigationBarTitleText: '我的订单',
+  enablePullDownRefresh: true,
+  usingComponents: {
+    elip: '~@/packages/elip'
+  }
+}
+</config>

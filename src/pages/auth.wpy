@@ -1,0 +1,91 @@
+<template>
+  <div class="container" v-if="loaded">
+    <div class="auth">
+      <image class="auth-logo" src="../images/lwzx-logo.png"></image>
+
+      <div class="auth-btn">
+        <button wx:if="{{isNeedAuth}}" open-type="getPhoneNumber" plain="true" lang="zh_CN" bindgetphonenumber="getPhoneNumber">
+          授权获取手机号码
+        </button>
+        <button wx:else plain="true" @tap="handleToHome">进入主页</button>
+      </div>
+      <div class="auth-tip" wx:if="{{ isNeedAuth }}">注：授权的手机号码要与扫描足部数据时填写的手机号码相同</div>
+    </div>
+  </div>
+</template>
+<config>
+{
+  navigationBarTitleText: '注册/绑定'
+}
+</config>
+<script>
+  import wepy from '@wepy/core'
+  import wxHttp from '../api/wxHttp'
+  import eventHub from '../common/eventHub'
+
+  wepy.page({
+    data: {
+      loaded: false,
+      isNeedAuth: false
+    },
+    async created () {
+      const result = await wxHttp.login()
+      this.loaded = true
+      if (result.code === 4011) {
+        this.isNeedAuth = true
+      } else {
+        this.isNeedAuth = false
+      }
+    },
+    methods: {
+      handleToHome () {
+        wx.switchTab({url: '/pages/home'})
+      },
+      getPhoneNumber (e) {
+        const { errMsg, encryptedData, iv } = e.$wx.detail
+        if (errMsg === 'getPhoneNumber:ok') {
+          this.handleAuthPhone(encryptedData, iv)
+        }
+      },
+      async handleAuthPhone (encryptedData, iv) {
+        const opts = {
+          encryptedData,
+          iv,
+          authPhone: true
+        }
+        const isReady = await wxHttp.login(opts)
+        if (isReady) {
+          this.handleToHome()
+        }
+      }
+    }
+  })
+</script>
+<style lang="less">
+.auth {
+  width: 100%;
+  &-logo {
+    width: 216rpx;
+    height: 138rpx;
+    margin: 70rpx auto 0;
+    display: block;
+  }
+  &-btn {
+    margin: 110rpx 52rpx 0;
+    button {
+      height: 80rpx;
+      line-height: 80rpx;
+      border:none;
+      font-size: 36rpx;
+      color: #fff;
+      background-color:rgba(26,93,225,1);
+      border-radius:40rpx;
+    }
+  }
+  &-tip {
+    font-size: 24rpx;
+    color: #666;
+    margin: 42rpx 0 0 54rpx;
+  }
+}
+</style>

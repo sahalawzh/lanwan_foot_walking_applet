@@ -1,0 +1,466 @@
+<template>
+  <div class="page-order">
+    <div class="address-container">
+      <navigator url="/pages/address" v-if="addressVO">
+        <div class="address-box font-size--28">
+          <div class="address-box__info">
+            <text>{{addressVO.recipient}}</text>
+            <text class="phone">{{addressVO.phone}}</text>
+          </div>
+          <div class="address-detail"><text class="address-detail__default" v-if="addressVO.isDefault === 0">默认</text>{{addressVO.province + addressVO.city + addressVO.detailAddress}}</div>
+        </div>
+        <image class="address-arrow" src="../images/arrow.png" mode="aspectFill"></image>
+      </navigator>
+      <navigator url="/pages/address" class="address-empty" wx:else>
+        <image src="../images/ico_address_empty.png" class="ico_address_empty" mode="aspectFill"></image>
+        <div class="address-empty__info">还没有收货地址，<text class="label">去添加</text></div>
+      </navigator>
+    </div>
+
+    <div class="order-lists">
+      <div class="order-lists-items">
+        <div class="order-lists-items__item">
+          <div class="product-info">
+            <div class="order-img"
+            style="background-image: url({{orderInfo.image}})"></div>
+            <div class="order-info">
+              <div class="order-info__title">
+                <elip line="1">{{orderInfo.titleName}}</elip>
+              </div>
+              <!-- <elip line="1" class="order-info__sku font-size--24">{{commonwxs.specStr(item)}}</elip> -->
+              <div class="order-info__content">
+                <div class="price-wrap">
+                  <div>￥{{orderInfo.price}}</div>
+                  <lxzw-stepper class="price-wrap__step" width="24rpx" height="58rpx" min="{{min}}" value="{{num}}" @changenumber.stop="changeQty"></lxzw-stepper>
+                </div>
+                <div class="name-wrap">
+                  <text class="username">{{ orderInfo.username }}</text>
+                  <text>{{ orderInfo.scanTime }}</text>
+                </div>
+                <div class="sku-list">
+                  <div class="sku-list__item">{{ orderInfo.crowdName }}</div>
+                  <div class="sku-list__item">{{ orderInfo.shoeName }}</div>
+                  <div class="sku-list__item">{{ orderInfo.functionName }}</div>
+                  <div class="sku-list__item">{{ orderInfo.sizeName }}</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="order-lists-items__status">
+            <div>买家留言：</div>
+            <input type="text" maxlength="100" class="remark" v-model="remark" placeholder="给商家留言，最多100个字">
+          </div>
+        </div>
+      </div>
+      <!-- <div class="wow-flex is-align-middle is-justify-space-between item-card" wx:if="{{isShow}}">
+        <div class="label font-size--26">优惠码</div>
+        <input type="text" class="value font-size--26" bindblur="handleDiscountPrice" placeholder-class="value-placeholder" placeholder="请输入优惠码">
+      </div> -->
+      <!-- <div class="item-card">
+        <div class="label">备注</div>
+        <input type="text" class="remark" bindblur="handleRemark" placeholder="请输入备注信息">
+      </div> -->
+    </div>
+
+    <div class="footer">
+      <div class="footer-info">
+        <div>合计: ￥{{totalPrice}}</div>
+      </div>
+      <div class="footer-btn">
+        <div class="pay-btn" @tap.stop="hanldeToPay">提交订单</div>
+      </div>
+    </div>
+
+  </div>
+</template>
+<config>
+{
+  navigationBarTitleText: '下单'
+  usingComponents: {
+    "lxzw-stepper": '~@/packages/stepper/index',
+    elip: '~@/packages/elip'
+  }
+}
+</config>
+<script>
+  import wepy from '@wepy/core'
+  import wxApi from '../api/wxApi'
+  import store from '../store'
+  import { mapState } from '@wepy/x'
+  import eventHub from '../common/eventHub'
+  import wxutils from '../utils/wxutils'
+
+  wepy.page({
+    store,
+    data: {
+      params: '',
+      orderInfo: '',
+      addressVO: '',
+      min: 1,
+      num: 1,
+      remark: '',
+      totalPrice: 0
+    },
+    onLoad (options) {
+      options.scanTime = decodeURIComponent(options.scanTime)
+      this.params = options
+      this.getOrderInfo()
+      if (this.currentAddress) {
+        this.addressVO = this.currentAddress
+      } else {
+        this.getDefaultAddress()
+      }
+      eventHub.$on('acceptFromAddress', res => {
+        this.addressVO = res
+      })
+    },
+    created () {
+    },
+    computed: {
+      ...mapState({
+        currentAddress: 'currentAddress'
+      })
+    },
+    methods: {
+      async hanldeToPay () {
+        try {
+          const { addressVO, remark } = this
+          if (!addressVO) {
+            return wx.showToast({
+              title: '还未选择发货地址',
+              icon: 'none'
+            })
+          }
+          wx.showLoading({
+            title: '提交中',
+            mask: true
+          })
+          const opts = {
+            addressId: addressVO.id,
+            remark
+          }
+          const res = await wxApi.postAddWxOrder(opts)
+          wxutils.wxPay(res).then(function () {
+            wx.redirectTo({
+              url: '/pages/success?oid=' + res.out_trade_no
+            })
+          }).catch(function (e) {
+            console.log(e)
+          })
+          wx.hideLoading()
+        } catch (error) {
+          console.log(error)
+          wx.hideLoading()
+          wx.showModal({
+            title: '提示',
+            showCancel: false,
+            content: error.message || '下单失败',
+            success(res) {
+              if (res.confirm) {
+                wx.navigateBack()
+              }
+            }
+          })
+        }
+      },
+      async getDefaultAddress () {
+        try {
+          const res = await wxApi.getDefaultAddress()
+          this.addressVO = res
+        } catch (error) {
+          console.log(error)
+        }
+      },
+      async changeQty (e) {
+        const { value } = e.$wx.detail
+        if (this.num === value) {
+          return
+        }
+        let nowQty = this.num
+        this.num = value
+        let opts = {
+          num: value
+        }
+        if (value > nowQty) { // 新增
+          opts.cartType = 0
+        } else {
+          opts.cartType = 1
+        }
+        try {
+          const res = await wxApi.putUpdateWxNum(opts)
+          this.orderInfo.num = value
+          this.totalPrice = res
+        } catch (error) {
+          this.num = this.orderInfo.num
+          console.log(error)
+        }
+      },
+      async getOrderInfo () {
+        try {
+          wx.showLoading({
+            title: '加载中',
+            mask: true
+          })
+          const res = await wxApi.postAddWxCart(this.params)
+          this.num = res.num
+          this.totalPrice = res.price
+          this.orderInfo = res
+          wx.hideLoading()
+        } catch (error) {
+          console.log(error)
+          wx.hideLoading()
+        }
+      }
+    }
+  })
+</script>
+<style lang="less" scoped>
+.page-order {
+  position: absolute;
+  width:100%;
+  background-color:#f0f2f7;
+  padding-bottom: 280rpx;
+  &-choice {
+    height: 100rpx;
+    line-height: 100rpx;
+    &_control {
+      padding-left: 60rpx;
+    }
+  }
+  .address-container {
+    position: relative;
+    background-color: #fff;
+    margin-top: 20rpx;
+    &:after{
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      height: 6rpx;
+      width: 100%;
+      background: linear-gradient(30deg, transparent 0, transparent 5rpx, #1762ce 5rpx, #1762ce 25rpx, transparent 25rpx, transparent 30rpx, #ef0d6a 30rpx, #ef0d6a 50rpx, transparent 50rpx, transparent 55rpx);
+      background-size: 100rpx 4rpx;
+      background-color: #fff;
+      background-position: bottom;
+    }
+    .address-box {
+      padding: 34rpx 42rpx 30rpx 54rpx;
+      &__info {
+        color: #353536;
+        font-weight: 600;
+        .phone {
+          margin-left: 30rpx;
+        }
+      }
+      .address-detail {
+        margin-top: 22rpx;
+        padding-right: 50rpx;
+        color: #494949;
+        &__default {
+          font-size: 22rpx;
+          color: #fff;
+          border-radius: 30rpx;
+          background-color: #135ee1;
+          display: inline-block;
+          width: 68rpx;
+          height: 32rpx;
+          line-height: 32rpx;
+          text-align: center;
+          margin-right: 16rpx;
+        }
+      }
+    }
+    .address-arrow {
+      position: absolute;
+      right: 42rpx;
+      top: 68rpx;
+      width: 24rpx;
+      height: 32rpx;
+    }
+    .address-empty {
+      padding: 26rpx 28rpx;
+      text-align: center;
+      font-size: 0;
+      .ico_address_empty {
+        width: 86rpx;
+        height: 90rpx;
+      }
+      &__info {
+        font-size: 26rpx;
+        margin-top: 16rpx;
+        color: #333;
+        .label {
+          color: #1A61CD;
+        }
+      }
+    }
+  }
+  .order-lists {
+    margin: 2rpx 12rpx 0;
+    padding-bottom: 180rpx;
+    &-items__item {
+      position: relative;
+      background-color:#fff;
+      margin-top: 26rpx;
+      border-radius: 18rpx;
+      .product-info {
+        position: relative;
+        display: flex;
+        padding: 22rpx 30rpx 22rpx 42rpx;
+        &::after {
+          position: absolute;
+          content: "";
+          height: 1rpx;
+          width: 100%;
+          left: 0;
+          bottom: 0;
+          transform: scaleY(0.5);
+          background-color: #DEDEE4;
+        }
+      }
+      .order-img {
+        position:relative;
+        background-repeat:no-repeat;
+        background-position:center;
+        background-size:cover;
+        width:190rpx;
+        height:156rpx;
+        margin-right:40rpx;
+        overflow:hidden;
+        border-radius:7rpx;
+      }
+      .order-info {
+        position: relative;
+        flex: 1;
+        overflow:hidden;
+        padding-top: 8rpx;
+        &__title {
+          font-size: 28rpx;
+          color: #666;
+          font-weight: 600;
+        }
+        &__sku {
+          padding-top: 10rpx;
+          color: #9b9b9b;
+          font-weight: 600;
+        }
+        &__content {
+          font-size: 28rpx;
+          margin-top: 10rpx;
+          color: #999;
+          font-size: 24rpx;
+          .price-wrap {
+            color: #333;
+            display: flex;
+            align-items: center;
+            font-size: 36rpx;
+            justify-content: space-between;
+            &__step {
+              font-size: 24rpx;
+            }
+          }
+          .name-wrap {
+            margin-top: 18rpx;
+            .username {
+              margin-right: 20rpx;
+            }
+          }
+          .sku-list {
+            margin-top: 8rpx;
+            &__item {
+              margin-top: 14rpx
+            }
+          }
+        }
+      }
+    }
+    &-items__status {
+      position: relative;
+      height: 88rpx;
+      line-height: 88rpx;
+      padding-left: 42rpx;
+      padding-right: 42rpx;
+      color: #333;
+      font-size: 24rpx;
+      display: flex;
+      align-items: center;
+      margin-right: 6rpx;
+      &:not(:last-child)::after {
+        position: absolute;
+        content: "";
+        height: 1rpx;
+        width: 100%;
+        left: 0;
+        bottom: 0;
+        transform: scaleY(0.5);
+        background-color: #DEDEE4;
+      }
+    }
+  }
+  .footer {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 99;
+    padding: 16rpx 50rpx 60rpx 36rpx;
+    background-color: #fff;
+    border-top: 1rpx solid #b7b7b7;
+    clear: both;
+    &-info {
+      font-weight: 600;
+      line-height: 72rpx;
+      float: left;
+      font-size: 30rpx;
+      color: #E1116A;
+    }
+    &-btn {
+      float: right;
+      .pay-btn {
+        width: 272rpx;
+        height: 72rpx;
+        line-height: 72rpx;
+        text-align: center;
+        background-color: #135ee1;
+        border-radius: 32rpx;
+        color: #fff;
+      }
+    }
+  }
+  .item-card {
+    margin-top: 30rpx;
+    height: 82rpx;
+    padding: 0 30rpx 0 42rpx;
+    background-color: #fff;
+    border-radius: 18rpx;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 26rpx;
+    .label {
+      color: #494949;
+    }
+    .value, .value-placeholder {
+      color: #888;
+      text-align: right;
+    }
+    .remark {
+      color: #9b9b9b;
+      text-align: right;
+      flex: 1;
+      margin-left: 100rpx;
+    }
+  }
+  .detail-box {
+    color: #494949;
+    margin-top: 30rpx;
+    padding: 0 30rpx 26rpx 42rpx;
+    background-color: #fff;
+    border-radius: 18rpx;
+    &__item {
+      padding-top: 26rpx;
+    }
+  }
+}
+</style>

@@ -1,0 +1,597 @@
+<template>
+  <div class="order-page">
+    <div class="order-page__banner">
+      <image class="xiedian" src="{{ detail.image }}"></image>
+    </div>
+
+    <div class="product-info">
+      <div class="product-info__title">{{ detail.title }}</div>
+      <div class="product-info__detail">
+        <div class="price">￥{{ detail.price }}</div>
+        <div class="market-price" wx:if="{{ detail.originalPrice > detail.price }}">原价 ￥{{ detail.originalPrice }}</div>
+      </div>
+    </div>
+    
+    <div class="product-cell">
+      <div class="product-cell__hd">
+        体验数据
+      </div>
+      <div class="product-cell__bd" @tap.stop="handleSearchScan">
+        <text v-if="currentScanData">已选“{{currentScanData.userName}}, {{currentScanData.scanTime}}”</text>
+        <text v-else>选择本次打印的脚型数据</text>
+      </div>
+      <div class="product-cell__ft" @tap.stop="handleSearchScan"></div>
+    </div>
+    <div class="product-cell">
+      <div class="product-cell__hd">
+        选择
+      </div>
+      <div class="product-cell__bd" @tap.stop="isOpenSku = true">
+        <text v-if="currentSkuData.length">已选“{{currentSkuData[0]}}”“{{currentSkuData[1]}}”“{{currentSkuData[2]}}”“{{currentSkuData[3]}}”</text>
+        <text v-else>请选择人群 鞋型 功能 鞋码</text>
+      </div>
+      <div class="product-cell__ft" @tap.stop="isOpenSku = true"></div>
+    </div>
+
+    <div class="tab-label">
+      <div class="collect-tabs">
+        <div class="font-size--24 collect-tabs__panle"
+          :class="{'active': defaultSelectTab === 'product'}">商品介绍</div>
+        <div class="font-size--24 collect-tabs__panle"
+        :class="{'active': defaultSelectTab === 'commet'}"><navigator url="" hover-class="none">评价</navigator></div>
+      </div>
+      <div class="tab-label-detail">
+        <image bindload="imageLoad" style="width: {{imageWidth}}px; height: {{imageHeight}}px" src="{{detail.introductionImage}}" mode="aspectFill"></image>
+      </div>
+    </div>
+
+
+    <div class="footer">
+      <div class="footer-box">
+        <div class="controls">
+          
+          <button class="controls-item open-type-btn" open-type="contact">
+            <image mode="aspectFill" class="controls-box controls-wechat" src="../images/ico_viewtimes.png"></image>
+          </button>
+
+          <button open-type="share" class="controls-item open-type-btn">
+            <image mode="aspectFill" class="controls-box controls-share" src="../images/ico_share.png"></image>
+          </button>
+          <!-- <div class="controls-item">
+            <image mode="aspectFill" class="controls-box controls-share" src="../images/ico_share.png"></image>
+            <div class="controls-item__sign font-size--24">366</div>
+          </div> -->
+        </div>
+        <div class="link">
+          <div class="font-size--32 link-btn" @tap.stop="handleToMake">我要定制</div>
+        </div>
+      </div>
+      
+    </div>
+
+    <div class="silder-box {{isOpenSku ? 'isRuleShow' : 'isRuleHide'}}" catchtouchmove="handleTouch">
+      <div class="silder-box-mask" @tap.stop="isOpenSku = false"></div>
+      <div class="silder-box-wrap silder-box-right">
+        <div class="silder-container">
+          <scroll-view scroll-y="true" class="scroll-area" style="height: {{slideHeight}}px">
+            <div class="product-box">
+              <image mode="aspectFill" class="product-box__img" src="{{detail.image}}"></image>
+              <div class="product-box__info">
+                <div class="color-price">{{ skuPrice }}</div>
+                <!-- <div class="font-size--24 product-info__number">编号<text class="num">{{detail.productNumber}}</text></div> -->
+              </div>
+            </div>
+
+            <div class="product-spec" v-for="(item, index) in spec" :key="index">
+              <div class="title">{{item.name}}</div>
+              <div class="spec-items">
+                <div class="spec-item spec-item-{{item.type}}"
+                  v-for="(_item, _index) in item.list"
+                  :key="_index"
+                  @tap.stop="handleToSelect(index, item, _item)"
+                  :class="{'active': specSelect[index] === _item.id, 'has-recommend': _item.isRecommend === 1}">
+                  <image mode="aspectFill" v-if="_item.isRecommend === 1" class="spec-item__recommed" src="../images/ico_recommend.png"></image>
+                  {{_item.name}}
+                </div>
+              </div>
+            </div>
+
+            <div class="product-step is-align-middle is-justify-space-between">
+              <div class="title">数量</div>
+              <lxzw-stepper class="product-step__stepper" width="24rpx" height="48rpx" min="{{min}}" value="{{num}}" @changenumber.stop="changeQty"></lxzw-stepper>
+            </div>
+      
+            
+          </scroll-view>
+
+          <div class="btn-wrap">
+            <button class="btn font-size--26" @tap.stop="handleToConfirm">确定</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</template>
+
+<config>
+{
+  navigationBarTitleText: '在线下单',
+  usingComponents: {
+    "lxzw-stepper": '~@/packages/stepper/index',
+    "search-item": '~@/components/searchitem'
+  }
+}
+</config>
+<script>
+  import wepy from '@wepy/core'
+  import imageUtil from '../utils/image'
+  import wxApi from '../api/wxApi'
+  import wxutils from '../utils/wxutils'
+  import isEmpty from '../utils/isEmpty'
+  import store from '../store'
+  import eventHub from '../common/eventHub'
+  import { mapMutations, mapState } from '@wepy/x'
+  import param from '../utils/param'
+
+  wepy.page({
+    store,
+    data: {
+      defaultSelectTab: 'product',
+      detail: '',
+      imageWidth: '',
+      imageHeight: '',
+      isOpenSku: false,
+      spec: [],
+      specSelect: [],
+      num: 1,
+      min: 1,
+      skuPrice: 0,
+      currentScanData: '',
+      currentSkuData: []
+    },
+    computed: {
+      ...mapState({
+        currentScanItem: 'currentScanItem',
+        currentSkuItem: 'currentSkuItem'
+      }),
+      slideHeight () {
+        let maxHeight = ''
+        wx.getSystemInfo({
+          success: function (res) {
+            let windowHeight = res.windowHeight
+            maxHeight = windowHeight - 90
+          }
+        })
+        return maxHeight
+      }
+    },
+    onShareAppMessage () {
+      const { detail } = this
+      this.getShareNum()
+      return {
+        title: detail.title,
+        imageUrl: detail.image,
+        path: 'pages/onlineOrder'
+      }
+    },
+    onLoad () {
+      eventHub.$on('acceptDataFromSelectScan', res => {
+        this.updateKey({
+          key: 'currentScanItem',
+          val: res
+        })
+        this.currentScanData = res
+      })
+      if (this.currentScanItem) {
+        this.currentScanData = this.currentScanItem
+      }
+      if (this.currentSkuItem) {
+        this.currentSkuData = this.currentSkuItem
+      }
+    },
+    created (options) {
+      wx.showLoading({
+        title: '加载中',
+        mask: true
+      })
+      const opts = {
+        linkType: 1
+      }
+      Promise.all([wxApi.getSpu(), wxApi.getListclassiFication(opts)]).then(res => {
+        let [ detail, spec ] =  res
+        this.detail = detail
+        let selectIds = []
+        let skuPrice = 0
+        spec.forEach(item => {
+          let recommenItem = item.list.filter(_item => _item.isRecommend === 1)
+          let currentItem = recommenItem.length ? recommenItem : item.list[0]
+          selectIds.push(currentItem.id)
+          if (item.type === 0) {
+            skuPrice = currentItem.secondName
+          }
+        })
+        this.skuPrice = skuPrice
+        this.specSelect = selectIds
+        this.spec = spec
+        wx.hideLoading()
+      }).catch(err => {
+        console.log(err)
+        wx.hideLoading()
+      })
+    },
+    methods: {
+      ...mapMutations({
+        updateKey: 'updateKey'
+      }),
+      async handleToMake () {
+        const { currentScanData, currentSkuData, num, specSelect } = this
+        if (!currentScanData) {
+          this.handleSearchScan()
+          return
+        }
+        if (!currentSkuData.length) {
+          this.isOpenSku = true
+          return
+        }
+        const args = {
+          scanId: currentScanData.id,
+          scanTime: currentScanData.scanTime,
+          indexes: specSelect.join('_'),
+          num
+        }
+        wxutils.backOrNavigate('/pages/reserver?' + param(args))
+      },
+      handleToConfirm () {
+        let selecSkuName = []
+        this.spec.forEach((item, index) => {
+          let listItem = item.list.filter(_item => this.specSelect[index] === _item.id)[0]
+          selecSkuName.push(listItem.name)
+        })
+        this.currentSkuData = selecSkuName
+        this.updateKey({
+          key: 'currentSkuItem',
+          val: selecSkuName
+        })
+        this.isOpenSku = false
+      },
+      handleSearchScan () {
+        wxutils.backOrNavigate('/pages/selectFootShapeList')
+      },
+      changeQty (e) {
+        const { value } = e.$wx.detail
+        this.num = value
+      },
+      // 规格选择
+      handleToSelect (index, item, _item) {
+        this.$set(this.specSelect, index, _item.id)
+        if (item.type === 0) { // 人群
+          this.skuPrice = _item.secondName
+        }
+      },
+      handleTouch () {
+        return true
+      },
+      imageLoad (e) {
+        const { width, height } = e.$wx.detail
+        let imageSize = imageUtil.imageZoomHeightUtil(width, height)
+        this.imageWidth = imageSize.imageWidth
+        this.imageHeight = imageSize.imageHeight
+      }
+    }
+  })
+</script>
+<style lang="less">
+.order-page {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #E7E7E7;
+  &__banner {
+    position: relative;
+    height: 500rpx;
+    background-color: #fff;
+    image {
+      width: 100%;
+      height: 100%;
+    }
+  }
+  .product-info {
+    background-color: #fff;
+    padding: 32rpx 50rpx 42rpx;
+    &__title {
+      font-size: 36rpx;
+      color: #666;
+    }
+    &__detail {
+      margin-top: 30rpx;
+      .price {
+        font-size: 36rpx;
+        color: #E1116A;
+        display: inline-block;
+        margin-right: 32rpx;
+      }
+      .market-price {
+        font-size: 24rpx;
+        position: relative;
+        display: inline-block;
+        color: #999;
+        &:before{
+          content: '';
+          position: absolute;
+          width: 100%;
+          height: 1px;
+          -webkit-transform: scale(1, 0.5);
+          transform: scale(1, 0.5);
+          top: 48%;
+          left: 7rpx;
+          background-color: #999;
+        }
+      }
+    }
+  }
+  .product-cell {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin-top: 16rpx;
+    background-color: #fff;
+    padding: 22rpx 68rpx 22rpx 0;
+    font-size: 28rpx;
+    &__hd {
+      position: absolute;
+      left: 0;
+      color: #ACACAC;
+      width: 162rpx;
+      text-align: right;
+    }
+    &__bd {
+      padding-left: 168rpx;
+      color: #333;
+      margin-left: 18rpx;
+    }
+    &__ft {
+      position: absolute;
+      right: 50rpx;
+      width: 18rpx;
+      height: 18rpx;
+      border-top: 2rpx solid #999;
+      border-right: 2rpx solid #999;
+      transform: rotate(45deg);
+    }
+  }
+  .tab-label {
+    padding-top: 16rpx;
+    .collect-tabs {
+      background-color: #fff;
+      color: #999;
+      height: 88rpx;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28rpx;
+      &__panle {
+        padding: 24rpx 38rpx 16rpx;
+      }
+      &__panle.active {
+        font-size: 30rpx;
+        border-bottom: 4rpx solid #0753FE;
+        font-weight:bold;
+        border-radius: 4rpx;
+      }
+    }
+    .collect-tabs__panle + .collect-tabs__panle {
+      margin-left: 34rpx;
+    }
+    &-detail {
+      width: 100%;
+      height: auto;
+      background-color: #fff;
+      font-size: 28rpx;
+      image {
+        width: 100%;
+        height: 100%;
+      }
+    }
+  }
+  .footer {
+    position: fixed;
+    bottom: 56rpx;
+    z-index: 98;
+    left: 0;
+    right: 0;
+    &-box {
+      width: 100%;
+      display: flex;
+      align-items: center;
+    }
+    .controls {
+      width: 52%;
+      padding-left: 30rpx;
+      display: flex;
+      align-items: center;
+      color: #fff;
+      &-item {
+        position: relative;
+        overflow: visible;
+        margin: 0;
+        &__sign {
+          position: absolute;
+          top: -4rpx;
+          right: 10rpx;
+          padding: 2rpx 8rpx;
+          min-width: 22rpx;
+          background-color: #6594E9;
+          color: #fff;
+          border-radius: 22rpx;
+          text-align: center;
+        }
+      }
+      &-box {
+        width: 138rpx;
+        height: 138rpx;
+        margin-right: 8rpx;
+      }
+    }
+    .link {
+      width: 48%;
+      margin: 0 auto;
+      &-btn {
+        width: 282rpx;
+        height: 80rpx;
+        text-align: center;
+        line-height: 80rpx;
+        background-color: #145ee1;
+        border-radius: 46rpx;
+        color: #fff;
+      }
+    }
+  }
+  .silder-box {
+    &.isRuleShow {
+      display: block;
+    }
+    &.isRuleHide {
+      display: none;
+    }
+    &-mask {
+      height: 100%;
+      width: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      position: fixed;
+      top: 0;
+      left: 0;
+    }
+    &-wrap {
+      width: 580rpx;
+      height: 100%;
+      z-index: 101;
+      position: fixed;
+      top: 0;
+      right: 0;
+      background-color: #fff; 
+    }
+    .silder-container {
+      width: 580rpx;
+      height: 100%;
+      background-color: #fff; 
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      .product-box {
+        position: relative;
+        display: flex;
+        padding: 36rpx 44rpx 28rpx;
+        &__img {
+          width: 212rpx;
+          height: 174rpx;
+          border-radius: 8rpx;
+          margin-right: 26rpx;
+        }
+        &__info {
+          display:flex;
+          flex-direction:column;
+          justify-content:flex-end;
+          .color-price {
+            font-size: 36rpx;
+            color: #E1116A;
+            font-weight: 600;
+          }
+        }
+      }
+      .product-spec {
+        padding-left: 46rpx;
+        .title {
+          color: #999;
+          font-size: 24rpx;
+          padding-top: 40rpx;
+          padding-bottom: 6rpx;
+        }
+        .spec-items {
+          display: flex;
+          flex-wrap: wrap;
+          .spec-item {
+            &-0, &-1, &-2 {
+              width: 170rpx;
+              height: 60rpx;
+              line-height: 60rpx;
+              margin-right: 40rpx;
+            }
+            &-3 {
+              padding: 16rpx 18rpx;
+              margin-right: 18rpx;
+            }
+            position: relative;
+            font-size: 24rpx;
+            margin-top: 22rpx;
+            background-color: #ededed;
+            color: #4b4b4b;
+            border-radius: 30rpx;
+            text-align: center;
+            &__recommed {
+              position: absolute;
+              left: 0;
+              top: 0;
+              width: 59rpx;
+              height: 54rpx;
+            }
+            &.active {
+              background-color: #dde8f5;
+              color: #6594e9;
+              border: 1rpx solid #8bb2f0;
+            }
+          }
+        }
+      }
+      .product-step {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 50rpx 54rpx 30rpx 46rpx;
+        .title {
+          color: #9b9b9b;
+          font-size: 26rpx;
+        }
+        &__stepper {
+          font-size: 26rpx;
+        }
+      }
+      .product-select {
+        padding: 38rpx 54rpx 0 46rpx;
+        color: #4b4b4b;
+        width: 100%;
+        display: flex;
+        .radio {
+          margin-right: 20rpx;
+        }
+      }
+      .btn-wrap{
+        position: fixed;
+        bottom: 0;
+        padding: 24rpx 0 60rpx 56rpx;
+        z-index: 102;
+        background-color: #fff; 
+        .btn {
+          width: 470rpx;
+          height: 80rpx;
+          font-size: 36rpx;
+          line-height: 80rpx;
+          border-radius: 40rpx;
+          text-align: center;
+          color: #fff;
+          background-color: #145ee1;
+          margin-left: 0;
+        }
+      }
+    }
+  }
+  .scan-list {
+    position: relative;
+    min-height: 100vh;
+    background: rgba(238,238,238,1);
+  }
+}
+</style>

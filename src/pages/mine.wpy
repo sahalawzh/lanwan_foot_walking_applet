@@ -1,0 +1,177 @@
+<template>
+  <div class="mine-page">
+    <div class="mine-page__banner">
+      <image src="{{ mineBg.image }}"></image>
+      <div class="user-info">
+        <div class="user-info__head">
+          <open-data type="userAvatarUrl"></open-data>
+        </div>
+        <div class="user-info__name">
+          <open-data type="userNickName"></open-data>
+        </div>
+      </div>
+    </div>
+    <div class="items">
+      <navigator url="./myOrder" hover-class="none" class="items-list">
+        <image class="list-icon" src="../images/order.png"></image>
+        <div>我的订单</div>
+        <div class="icon-arrow"></div>
+      </navigator>
+      <!-- <div class="items-list">
+        <image class="list-icon" src="../images/coupon.png"></image>
+        <div>优惠券</div>
+        <div class="icon-arrow"></div>
+      </div> -->
+      <navigator url="./address" hover-class="none" class="items-list">
+        <image class="list-icon" src="../images/location.png"></image>
+        <div>收货地址</div>
+        <div class="icon-arrow"></div>
+      </navigator>
+      <button class="items-list open-type-btn" open-type="contact">
+        <image class="list-icon" src="../images/concat.png"></image>
+        <div>联系客服</div>
+        <div class="icon-arrow"></div>
+      </button>
+    </div>
+
+    <div class="keep-box" v-if="false">
+      <div class="info">关注公众号，周周有福利</div>
+      <div class="keep-btn">关注领券</div>
+    </div>
+
+    <custom-tabbar tabbar="{{tabbar}}"></custom-tabbar>
+  </div>
+</template>
+<config>
+{
+  navigationBarTitleText: '我的',
+  usingComponents: {
+    "custom-tabbar": '~@/customTabBar/index'
+  }
+}
+</config>
+<script>
+  import wepy from '@wepy/core'
+  import wxApi from '../api/wxApi'
+
+  wepy.page({
+    data: {
+      tabbar: {},
+      mineBg: ''
+    },
+    async created () {
+      // 隐藏系统tabbar
+      wx.hideTabBar()
+      this.tabbar = this.$app.$options.globalData.tabBar
+      const res = await wxApi.getShowAll()
+      this.mineBg = res[1]
+    },
+    attached () {
+      this.$app.editTabbar()
+    },
+    methods: {
+    }
+  })
+</script>
+<style lang="less" scoped>
+.mine-page {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #E7E7E7;
+  &__banner {
+    position: relative;
+    image {
+      width: 100%;
+      height: 300rpx;
+    }
+    .user-info {
+      position: absolute;
+      top: 52rpx;
+      left: calc((100% - 102rpx) / 2);
+      &__head {
+        width: 102rpx;
+        height: 102rpx;
+        border-radius: 50%;
+        background-color: #fff;
+        overflow: hidden;
+        margin: 0 auto;
+      }
+      &__name {
+        font-size: 30rpx;
+        color: #fff;
+        margin-top: 26rpx;
+      }
+    }
+  }
+  .items {
+    position: relative;
+    margin: -36rpx 16rpx 0;
+    padding: 0 35rpx;
+    border-radius: 10rpx;
+    background-color: #fff;
+    &-list {
+      position: relative;
+      height: 80rpx;
+      line-height: 80rpx;
+      font-size: 24rpx;
+      color: #333;
+      display: flex;
+      align-items: center;
+      &:not(:last-child)::after{
+        position: absolute;
+        content: "";
+        height: 1rpx;
+        width: 100%;
+        left: 0;
+        bottom: 0;
+        transform: scaleY(0.5);
+        background-color: #eee;
+      }
+      .list-icon {
+        width: 32rpx;
+        height: 32rpx;
+        margin-right: 18rpx;
+      }
+      .icon-arrow {
+        position: absolute;
+        right: 4rpx;
+        width: 14rpx;
+        height: 14rpx;
+        border-top: 3rpx solid #999;
+        border-right: 3rpx solid #999;
+        transform: rotate(45deg);
+      }
+    }
+  }
+  .keep-box {
+    position: relative;
+    border-radius: 10rpx;
+    background-color: #fff;
+    margin: 14rpx 16rpx 0;
+    padding-left: 36rpx;
+    height: 80rpx;
+    line-height: 80rpx;
+    .info {
+      font-size: 24rpx;
+      color: #333;
+    }
+    .keep-btn {
+      position: absolute;
+      right: 35rpx;
+      top: 14rpx;
+      width: 150rpx;
+      height: 50rpx;
+      line-height: 50rpx;
+      text-align: center;
+      border-radius: 25rpx;
+      background-color: #1A61CD;
+      font-size: 24rpx;
+      color: #fff;
+    }
+  }
+}
+</style>
+

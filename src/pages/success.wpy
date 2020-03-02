@@ -1,0 +1,113 @@
+<template>
+  <div class="page-success">
+    <div class="success-header">
+      <div class="success-header__sign">
+        <image class="icon" src="../images/ico_Successfulpayment.png" mode="aspectFill"></image>
+        <div class="text">支付成功</div>
+      </div>
+      <div class="success-header__price">实付 ￥{{totalPrice}}</div>
+      <div class="success-header__btn">
+        <navigator url="/pages/home" open-type="switchTab" class="success-btn">返回首页</navigator>
+        <navigator url="/pages/myOrder" class="success-btn">查看订单</navigator>
+      </div>
+    </div>
+  </div>
+</template>
+<config>
+{
+  navigationBarTitleText: '成功页面'
+}
+</config>
+<script>
+  import wepy from '@wepy/core'
+  import wxApi from '../api/wxApi'
+  wepy.page({
+    data: {
+      orderNo: '',
+      totalPrice: 0
+    },
+    onLoad ({ oid }) {
+      this.orderNo = oid
+      this.getOrderAmount()
+    },
+    methods: {
+      async getOrderAmount () {
+        try {
+          wx.showLoading({
+            title: '加载中',
+            mask: true
+          })
+          const { orderNo } = this
+          const res = await wxApi.getOrderPrice({orderNo})
+          this.totalPrice = res
+          wx.hideLoading()
+        } catch (error) {
+          console.log(err)
+          wx.hideLoading()
+        }
+      }
+    }
+  })
+</script>
+
+<style lang="less" scoped>
+.page-success {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #f6f7f7;
+  .success-header {
+    padding: 130rpx 0 98rpx;
+    background: linear-gradient(to bottom, #76b1f4, #f3092f);
+    color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    &__sign {
+      display: flex;
+      align-items: center;
+      .icon {
+        width: 38rpx;
+        height: 38rpx;
+        margin-right: 16rpx;
+      }
+      .text {
+        font-weight: 600;
+        font-size: 40rpx;
+      }
+    }
+    &__price {
+      margin-top: 18rpx;
+      font-size: 30rpx;
+    }
+    &__btn {
+      display: flex;
+      margin-top: 52rpx;
+    }
+    .success-btn {
+      width: 220rpx;
+      height: 64;
+      line-height: 64rpx;
+      text-align: center;
+      border-radius: 30rpx;
+      border: 1rpx solid #fff;
+      font-size: 26rpx;
+      & + .success-btn {
+        margin-left: 26rpx;
+      }
+    }
+  }
+  .success-content {
+    width: 100%;
+    margin-top: -38rpx;
+    margin-bottom: 100rpx;
+    padding: 0 14rpx;
+    box-sizing: border-box;
+  }
+}
+</style>
+
+

@@ -1,28 +1,21 @@
-import Vuex from '@wepy/x';
+import Vuex from '@wepy/x'
+import wxApi from '../api/wxApi'
 
 export default new Vuex.Store({
   state: {
-    counter: 0
+    currentScanItem: '',
+    currentSkuItem: '',
+    currentAddress: ''
   },
   mutations: {
-    increment (state) {
-      state.counter++;
-    },
-    decrement (state) {
-      state.counter--;
+    updateKey (state, {key, val}) {
+      state[key] = val
     }
   },
   actions: {
-    increment ({ commit }) {
-      commit('increment');
-    },
-    decrement ({ commit }) {
-      commit('decrement');
-    },
-    incrementAsync ({ commit }) {
-      setTimeout(() => {
-        commit('increment');
-      }, 1000);
+    async getLocalLocation () {
+      const res = await wxApi.getLocalLocation()
+      return res
     }
   }
-});
+})

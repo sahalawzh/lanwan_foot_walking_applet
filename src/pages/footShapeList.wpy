@@ -1,0 +1,49 @@
+<template>
+  <div class="shape-page">
+    <search-item></search-item>
+
+    <custom-tabbar tabbar="{{tabbar}}"></custom-tabbar>
+  </div>
+</template>
+<script>
+  import wepy from '@wepy/core'
+  import http from '../common/http'
+  import wxApi from '../api/wxApi'
+
+  wepy.page({
+    data: {
+      tabbar: {},
+      scanList: []
+    },
+    created () {
+      // 隐藏系统tabbar
+      wx.hideTabBar()
+      this.tabbar = this.$app.$options.globalData.tabBar
+    },
+    attached () {
+      this.$app.editTabbar()
+    },
+    methods: {
+    }
+  })
+</script>
+<style lang="less" scoped>
+.shape-page {
+  width: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #E7E7E7;
+}
+</style>
+<config>
+{
+  navigationBarTitleText: '脚型数据',
+  usingComponents: {
+    "search-item": '~@/components/searchitem',
+    "custom-tabbar": '~@/customTabBar/index'
+  }
+}
+</config>
+
