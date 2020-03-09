@@ -29,6 +29,10 @@
       isNeedAuth: false
     },
     async created () {
+      wx.showLoading({
+        title: '加载中',
+        mask: true
+      })
       const result = await wxHttp.login()
       this.loaded = true
       if (result.code === 4011) {
@@ -36,6 +40,7 @@
       } else {
         this.isNeedAuth = false
       }
+      wx.hideLoading()
     },
     methods: {
       handleToHome () {
@@ -62,7 +67,7 @@
   })
 </script>
 <style lang="less">
-.auth {
+.auth-phone {
   width: 100%;
   &-logo {
     width: 216rpx;

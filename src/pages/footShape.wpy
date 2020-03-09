@@ -1,10 +1,10 @@
 <template>
   <div class="foot-shape">
-    <div class="foot-shape__header">
-      <div class="cell-item company-name"><text class="tag">{{ currentScanItem.tag }}</text>{{ currentScanItem.companyName }}</div>
+    <div class="foot-shape__header" @tap="hanldeToShop(scanDetail.locationId)">
+      <div class="cell-item company-name"><text class="tag">{{ scanDetail.tag }}</text>{{ scanDetail.companyName }}</div>
       <div class="cell-item address-info">
         <image class="location-icon" src="../images/location-gray.png"></image>
-        <text>{{ currentScanItem.address }}</text>
+        <text>{{ scanDetail.address }}</text>
       </div>
       <div class="cell-arrow"></div>
     </div>
@@ -12,14 +12,14 @@
 
     <div class="foot-shape__content">
       <div class="table-header">
-        <div>姓名： {{ currentScanItem.userName }}</div>
-        <div>检测日期：{{ currentScanItem.scanTime }}</div>
+        <div>姓名： {{ scanDetail.userName }}</div>
+        <div>检测日期：{{ scanDetail.scanTime }}</div>
       </div>
       <div class="result-info">
         <div class="title">诊断结果</div>
         <div class="content">
-          <div class="content-txt">左脚 <text>{{ currentScanItem.leftFooterResult }}</text></div>
-          <div>右脚 <text>{{ currentScanItem.rightFooterResult }}</text></div>
+          <div class="content-txt">左脚 <text>{{ scanDetail.leftFooterResult }}</text></div>
+          <div>右脚 <text>{{ scanDetail.rightFooterResult }}</text></div>
         </div>
       </div>
       <div class="table-content">
@@ -30,48 +30,48 @@
         </div>
         <div class="table-content__tr">
           <div class="table-td">脚长（mm）</div>
-          <div class="table-td">{{ currentScanItem.jsonData[0].feetLength }}</div>
-          <div class="table-td">{{ currentScanItem.jsonData[1].feetLength }}</div>
+          <div class="table-td">{{ scanDetail.jsonData[0].feetLength }}</div>
+          <div class="table-td">{{ scanDetail.jsonData[1].feetLength }}</div>
         </div>
         <div class="table-content__tr">
           <div class="table-td">脚宽（mm）</div>
-          <div class="table-td">{{ currentScanItem.jsonData[0].feetWidth }}</div>
-          <div class="table-td">{{ currentScanItem.jsonData[1].feetWidth }}</div>
+          <div class="table-td">{{ scanDetail.jsonData[0].feetWidth }}</div>
+          <div class="table-td">{{ scanDetail.jsonData[1].feetWidth }}</div>
         </div>
         <div class="table-content__tr">
           <div class="table-td">跖趾围长（mm）</div>
-          <div class="table-td">{{ currentScanItem.jsonData[0].plantarCircumference }}</div>
-          <div class="table-td">{{ currentScanItem.jsonData[1].plantarCircumference }}</div>
+          <div class="table-td">{{ scanDetail.jsonData[0].plantarCircumference }}</div>
+          <div class="table-td">{{ scanDetail.jsonData[1].plantarCircumference }}</div>
         </div>
         <div class="table-content__tr">
           <div class="table-td">前跗骨围长（mm）</div>
-          <div class="table-td">{{ currentScanItem.jsonData[0].tarsalCircumference }}</div>
-          <div class="table-td">{{ currentScanItem.jsonData[1].tarsalCircumference }}</div>
+          <div class="table-td">{{ scanDetail.jsonData[0].tarsalCircumference }}</div>
+          <div class="table-td">{{ scanDetail.jsonData[1].tarsalCircumference }}</div>
         </div>
         <div class="table-content__tr">
           <div class="table-td">兜根围长（mm）</div>
-          <div class="table-td">{{ currentScanItem.jsonData[0].heelCircumference }}</div>
-          <div class="table-td">{{ currentScanItem.jsonData[1].heelCircumference }}</div>
+          <div class="table-td">{{ scanDetail.jsonData[0].heelCircumference }}</div>
+          <div class="table-td">{{ scanDetail.jsonData[1].heelCircumference }}</div>
         </div>
         <div class="table-content__tr">
           <div class="table-td">腰围围度（mm）</div>
-          <div class="table-td">{{ currentScanItem.jsonData[0].waistCircumference }}</div>
-          <div class="table-td">{{ currentScanItem.jsonData[1].waistCircumference }}</div>
+          <div class="table-td">{{ scanDetail.jsonData[0].waistCircumference }}</div>
+          <div class="table-td">{{ scanDetail.jsonData[1].waistCircumference }}</div>
         </div>
         <div class="table-content__tr">
           <div class="table-td">背围围度（mm）</div>
-          <div class="table-td">{{ currentScanItem.jsonData[0].instepCircumferenceY }}</div>
-          <div class="table-td">{{ currentScanItem.jsonData[1].instepCircumferenceY }}</div>
+          <div class="table-td">{{ scanDetail.jsonData[0].instepCircumferenceY }}</div>
+          <div class="table-td">{{ scanDetail.jsonData[1].instepCircumferenceY }}</div>
         </div>
         <div class="table-content__tr">
           <div class="table-td">踝围围长（mm）</div>
-          <div class="table-td">{{ currentScanItem.jsonData[0].ankleCircumference }}</div>
-          <div class="table-td">{{ currentScanItem.jsonData[1].ankleCircumference }}</div>
+          <div class="table-td">{{ scanDetail.jsonData[0].ankleCircumference }}</div>
+          <div class="table-td">{{ scanDetail.jsonData[1].ankleCircumference }}</div>
         </div>
         <div class="table-content__tr">
           <div class="table-td">足弓高度（mm）</div>
-          <div class="table-td">{{ currentScanItem.jsonData[0].footArchHgt }}</div>
-          <div class="table-td">{{ currentScanItem.jsonData[1].footArchHgt }}</div>
+          <div class="table-td">{{ scanDetail.jsonData[0].footArchHgt }}</div>
+          <div class="table-td">{{ scanDetail.jsonData[1].footArchHgt }}</div>
         </div>
       </div>
       <image class="lwzx-logo" src="../images/lwzx-logo.png"></image>
@@ -95,6 +95,7 @@
   import store from '../store'
   import { mapState } from '@wepy/x'
   import wxutils from '../utils/wxutils'
+  import eventHub from '../common/eventHub'
 
   wepy.page({
     store,
@@ -103,12 +104,16 @@
     },
     computed: {
       ...mapState({
-        currentScanItem: 'currentScanItem'
+        scanDetail: 'scanDetail'
       })
     },
     methods: {
+      hanldeToShop (locationId) {
+        wxutils.backOrNavigate(`/pages/shopDetail?id=${locationId}`)
+      },
       handleToMake () {
-        wxutils.backOrNavigate('/pages/onlineOrder')
+        eventHub.$emit('acceptDataFromSelectScan', this.scanDetail)
+        wx.switchTab({url: '/pages/onlineOrder'})
       }
     }
   })
@@ -120,7 +125,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #E7E7E7;
+  background-color: #f0f2f7;
   &__header {
     padding: 35rpx 55rpx 30rpx 50rpx;
     background-color: #fff;
@@ -225,7 +230,7 @@
         border-right: 1rpx solid #ccc;
       }
       &:nth-child(even) {
-        background-color: #F6F6F6;
+        background-color: #f0f2f7;
       }
     }
   }

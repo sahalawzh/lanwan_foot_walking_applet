@@ -76,7 +76,7 @@
 </template>
 <config>
 {
-  navigationBarTitleText: '下单'
+  navigationBarTitleText: '下单',
   usingComponents: {
     "lxzw-stepper": '~@/packages/stepper/index',
     elip: '~@/packages/elip'
@@ -113,6 +113,13 @@
       }
       eventHub.$on('acceptFromAddress', res => {
         this.addressVO = res
+      })
+      eventHub.$on('acceptFromAddressDelId', delId => {
+        console.log('delId')
+        console.log(delId)
+        if (this.addressVO && this.addressVO.id === delId) {
+          this.getDefaultAddress()
+        }
       })
     },
     created () {
@@ -167,7 +174,8 @@
       async getDefaultAddress () {
         try {
           const res = await wxApi.getDefaultAddress()
-          this.addressVO = res
+          this.addressVO = res || ''
+          console.log(this.addressVO)
         } catch (error) {
           console.log(error)
         }
@@ -396,6 +404,10 @@
         transform: scaleY(0.5);
         background-color: #DEDEE4;
       }
+      .remark {
+        color: #9b9b9b;
+        flex: 1;
+      }
     }
   }
   .footer {
@@ -444,12 +456,6 @@
     .value, .value-placeholder {
       color: #888;
       text-align: right;
-    }
-    .remark {
-      color: #9b9b9b;
-      text-align: right;
-      flex: 1;
-      margin-left: 100rpx;
     }
   }
   .detail-box {

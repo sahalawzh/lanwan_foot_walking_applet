@@ -6,9 +6,8 @@
   background: white;
   display: flex;
   color: #666;
-  z-index: 1002;
+  z-index: 997;
 }
-
 .tab-bar-item {
   position: relative;
   flex: 1;
@@ -17,7 +16,13 @@
   align-items: center;
   flex-direction: column;
   padding-top: 15rpx;
-  z-index: 1004;
+  z-index: 997;
+}
+.tab-bar.tab-bar__heightX {
+  height: 130rpx;
+}
+.tab-bar.tab-bar__heightX .tab-bar-item {
+  padding-top: 20rpx;
 }
 
 .tab-bar-item .tab-icon-0 {

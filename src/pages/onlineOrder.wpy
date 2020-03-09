@@ -4,7 +4,7 @@
       <image class="xiedian" src="{{ detail.image }}"></image>
     </div>
 
-    <div class="product-info">
+    <div class="product-info" v-if="detail">
       <div class="product-info__title">{{ detail.title }}</div>
       <div class="product-info__detail">
         <div class="price">￥{{ detail.price }}</div>
@@ -38,6 +38,7 @@
         <div class="font-size--24 collect-tabs__panle"
           :class="{'active': defaultSelectTab === 'product'}">商品介绍</div>
         <div class="font-size--24 collect-tabs__panle"
+        v-if="false"
         :class="{'active': defaultSelectTab === 'commet'}"><navigator url="" hover-class="none">评价</navigator></div>
       </div>
       <div class="tab-label-detail">
@@ -54,7 +55,7 @@
             <image mode="aspectFill" class="controls-box controls-wechat" src="../images/ico_viewtimes.png"></image>
           </button>
 
-          <button open-type="share" class="controls-item open-type-btn">
+          <button open-type="share" class="controls-item open-type-btn" v-if="false">
             <image mode="aspectFill" class="controls-box controls-share" src="../images/ico_share.png"></image>
           </button>
           <!-- <div class="controls-item">
@@ -111,15 +112,33 @@
       </div>
     </div>
 
+    <custom-tabbar tabbar="{{tabbar}}"></custom-tabbar>
+
+    <lxzw-popup class="address-picker" border-radius="false" full="false" gaps="{{[0]}}" status="{{authStatus}}" locked="true" position="bottom" show-close="false">
+      <div style="width: 750rpx" class="auth-container">
+        <div class="auth-phone">
+          <image class="auth-logo" src="../images/lwzx-logo.png"></image>
+
+          <div class="auth-btn">
+            <button open-type="getPhoneNumber" plain="true" lang="zh_CN" bindgetphonenumber="getPhoneNumber">
+              授权获取手机号码
+            </button>
+          </div>
+          <div class="auth-tip">注：授权的手机号码要与扫描足部数据时填写的手机号码相同</div>
+        </div>
+      </div>
+    </lxzw-popup>
   </div>
 </template>
 
 <config>
 {
-  navigationBarTitleText: '在线下单',
+  navigationBarTitleText: '我要定制',
   usingComponents: {
+    "custom-tabbar": '~@/customTabBar/index',
     "lxzw-stepper": '~@/packages/stepper/index',
-    "search-item": '~@/components/searchitem'
+    "search-item": '~@/components/searchitem',
+    "lxzw-popup": '~@/packages/popup'
   }
 }
 </config>
@@ -133,10 +152,13 @@
   import eventHub from '../common/eventHub'
   import { mapMutations, mapState } from '@wepy/x'
   import param from '../utils/param'
+  import wxHttp from '../api/wxHttp'
 
   wepy.page({
     store,
     data: {
+      authStatus: 'hide',
+      tabbar: {},
       defaultSelectTab: 'product',
       detail: '',
       imageWidth: '',
@@ -152,8 +174,7 @@
     },
     computed: {
       ...mapState({
-        currentScanItem: 'currentScanItem',
-        currentSkuItem: 'currentSkuItem'
+        currentScanItem: 'currentScanItem'
       }),
       slideHeight () {
         let maxHeight = ''
@@ -182,15 +203,25 @@
           val: res
         })
         this.currentScanData = res
+        if (!this.currentSkuData.length) {
+          this.isOpenSku = true
+        } else {
+          this.handleSettle()
+        }
       })
       if (this.currentScanItem) {
         this.currentScanData = this.currentScanItem
       }
-      if (this.currentSkuItem) {
-        this.currentSkuData = this.currentSkuItem
-      }
+      eventHub.$on('auth-phone', res => {
+        this.authStatus = res
+      })
     },
-    created (options) {
+    attached () {
+      this.$app.editTabbar()
+    },
+    created () {
+      wx.hideTabBar()
+      this.tabbar = this.$app.$options.globalData.tabBar
       wx.showLoading({
         title: '加载中',
         mask: true
@@ -221,11 +252,26 @@
       })
     },
     methods: {
+      getPhoneNumber (e) {
+        const { errMsg, encryptedData, iv } = e.$wx.detail
+        if (errMsg === 'getPhoneNumber:ok') {
+          this.handleAuthPhone(encryptedData, iv)
+        }
+      },
+      async handleAuthPhone (encryptedData, iv) {
+        const opts = {
+          encryptedData,
+          iv,
+          authPhone: true
+        }
+        await wxHttp.login(opts)
+        this.authStatus = 'hide'
+      },
       ...mapMutations({
         updateKey: 'updateKey'
       }),
       async handleToMake () {
-        const { currentScanData, currentSkuData, num, specSelect } = this
+        const { currentScanData, currentSkuData } = this
         if (!currentScanData) {
           this.handleSearchScan()
           return
@@ -234,6 +280,10 @@
           this.isOpenSku = true
           return
         }
+        this.handleSettle()
+      },
+      handleSettle () {
+        const { currentScanData, currentSkuData, num, specSelect } = this
         const args = {
           scanId: currentScanData.id,
           scanTime: currentScanData.scanTime,
@@ -249,11 +299,12 @@
           selecSkuName.push(listItem.name)
         })
         this.currentSkuData = selecSkuName
-        this.updateKey({
-          key: 'currentSkuItem',
-          val: selecSkuName
-        })
         this.isOpenSku = false
+        if (!this.currentScanData) {
+          this.handleSearchScan()
+        } else {
+          this.handleSettle()
+        }
       },
       handleSearchScan () {
         wxutils.backOrNavigate('/pages/selectFootShapeList')
@@ -291,7 +342,7 @@
   background-color: #E7E7E7;
   &__banner {
     position: relative;
-    height: 500rpx;
+    height: 618rpx;
     background-color: #fff;
     image {
       width: 100%;
@@ -390,6 +441,7 @@
       height: auto;
       background-color: #fff;
       font-size: 28rpx;
+      padding-bottom: 130rpx;
       image {
         width: 100%;
         height: 100%;
@@ -398,7 +450,7 @@
   }
   .footer {
     position: fixed;
-    bottom: 56rpx;
+    bottom: 126rpx;
     z-index: 98;
     left: 0;
     right: 0;
@@ -460,7 +512,7 @@
       height: 100%;
       width: 100%;
       background-color: rgba(0, 0, 0, 0.5);
-      z-index: 100;
+      z-index: 998;
       position: fixed;
       top: 0;
       left: 0;
@@ -468,7 +520,7 @@
     &-wrap {
       width: 580rpx;
       height: 100%;
-      z-index: 101;
+      z-index: 999;
       position: fixed;
       top: 0;
       right: 0;
@@ -592,6 +644,36 @@
     position: relative;
     min-height: 100vh;
     background: rgba(238,238,238,1);
+  }
+  .auth-container {
+    width: 750rpx;
+    padding: 70rpx 0 60rpx;
+    .auth-phone {
+      width: 100%;
+      .auth-logo {
+        width: 216rpx;
+        height: 138rpx;
+        margin: 0 auto;
+        display: block;
+      }
+      .auth-btn {
+        margin: 30rpx 52rpx 0;
+        button {
+          height: 80rpx;
+          line-height: 80rpx;
+          border:none;
+          font-size: 36rpx;
+          color: #fff;
+          background-color:rgba(26,93,225,1);
+          border-radius:40rpx;
+        }
+      }
+      .auth-tip {
+        font-size: 24rpx;
+        color: #666;
+        margin: 42rpx 0 0 54rpx;
+      }
+    }
   }
 }
 </style>

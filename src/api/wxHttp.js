@@ -101,11 +101,9 @@ export default class wxHttp {
         eventHub.$emit('auth-phone')
       }
       wx.hideLoading()
-      return true
     } catch (error) {
       console.log(error)
       wx.hideLoading()
-      return false
     }
   }
   static async wxLogin (code, config) {
@@ -117,13 +115,13 @@ export default class wxHttp {
         key: 'loginInfo',
         data: result
       })
-      // if (config.authLogin) {
-      //   eventHub.$emit('auth-login', result)
-      // }
-      return result
     } catch (e) {
+      if (e.code === 4011) {
+        this.authPhone = 1
+        eventHub.$emit('auth-phone', true)
+      }
       console.log(e)
-      return e
+      wx.hideLoading()
     }
   }
   /**

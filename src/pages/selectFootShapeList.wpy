@@ -34,7 +34,7 @@
         }
         let currentItem = this.scanData.filter(item => item.isCheck)[0]
         eventHub.$emit('acceptDataFromSelectScan', currentItem)
-        wxutils.backOrRedirect('/pages/onlineOrder')
+        wx.switchTab({url: '/pages/onlineOrder'})
       },
       hadnleScanListData (data) {
         this.scanData = data
@@ -50,7 +50,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #E7E7E7;
+  background-color: #f0f2f7;
   .btn-container {
     position: fixed;
     left: 0;

@@ -1,11 +1,13 @@
 <template>
-  <div class="shop-conatiner">
+  <div class="shop-conatiner" v-if="storeDetail">
     <div class="shop-header">
       <div class="company-name">{{ storeDetail.companyName }}</div>
       <div class="shop-header__content">
         <div class="item-row">
           <div class="item-label">营业时间：</div>
-          <div class="item-value">{{ storeDetail.businessDays[0] }} {{ storeDetail.businessHours[0] }} {{ storeDetail.businessDays[1] }} {{ storeDetail.businessHours[1] }} {{ storeDetail.businessDays[2] }} {{ storeDetail.businessHours[2] }}</div>
+          <div class="item-value">
+            <div v-for="(item, index) in businessTime" :key="index">{{item.week}} {{item.time}}</div>
+          </div>
         </div>
         <div class="item-row">
           <div class="item-label">测量地址：</div>
@@ -16,9 +18,9 @@
     </div>
     <div class="shop-map">
       <div class="shop-map__wrap">
-        <div class="title">门店地图</div>
+        <div class="title">门店地图 <button type="default" class="mini-btn" size="mini" @click="handleOpenBigMap">打开全景地图 </button></div>
         <div>
-          <map class="map" :longitude="storeDetail.longitude" :latitude="storeDetail.latitude"></map>
+          <map class="map" show-location :markers="markers" scale="14" :longitude="storeDetail.longitude" :latitude="storeDetail.latitude"></map>
         </div>
       </div>
     </div>
@@ -36,13 +38,28 @@
   wepy.page({
     data: {
       addressId: '',
-      storeDetail: ''
+      storeDetail: '',
+      businessTime: [],
+      markers: []
     },
     onLoad ({ id }) {
       this.addressId = id
       this.getLocationDetail()
     },
     methods: {
+      handleOpenBigMap () {
+        const { latitude, longitude } = this.storeDetail
+        wx.getLocation({
+          type: 'gcj02',
+          success (res) {
+            wx.openLocation({
+              latitude,
+              longitude,
+              scale: 18
+            })
+          }
+        })
+      },
       async getLocationDetail () {
         try {
           wx.showLoading({
@@ -53,8 +70,25 @@
             id: this.addressId
           }
           const res = await wxApi.getLocationDetail(opts)
+          const businessTime = []
+          res.businessDays.map((item, index) => businessTime.push({
+            week: item,
+            time: res.businessHours[index]
+          }))
+          this.businessTime = businessTime
+          const { latitude, longitude, companyName } = res
+          this.markers = [{
+            id: 0,
+            latitude: latitude,
+            longitude: longitude,
+            callout:{
+              content: companyName,
+              padding: 10,
+              display: 'ALWAYS',
+              textAlign: 'center'
+            }
+          }]
           this.storeDetail = res
-          console.log(this.storeDetail)
           wx.hideLoading()
         } catch (error) {
           console.log(error)
@@ -106,6 +140,11 @@
         padding-left: 48rpx;
         font-size: 30rpx;
         color: #333;
+        display: flex;
+        align-items: center;
+      }
+      .mini-btn {
+        margin-left: 26rpx;
       }
       .map {
         width: 100%;

@@ -5,10 +5,17 @@
       <text v-for="(item, index) in allCitys" :key="index" @click.stop="handleToHref(index)" class="float_span">{{index}}</text>
     </div>
 
-    <div class="cell-header">
+    <!-- <div class="cell-header">
       <image class="cell-header__location" src="../images/location.png"></image>
       <div class="cell-header__address">{{ currentCity }}</div>
       <div class="cell-header__tip">当前定位城市</div>
+    </div> -->
+
+    <div class="city-items">
+      <div class="city-items__title">定位城市</div>
+      <div class="city-items__content">
+        <div class="city-items__content_value" @tap="handleToCurrentCity">{{ currentCity }}</div>
+      </div>
     </div>
 
     <div class="city-list">
@@ -46,9 +53,24 @@
     },
     data: {
       allCitys: [],
-      currentCity: ''
+      currentCity: '',
+      latitude: '',
+      longitude: ''
+    },
+    onLoad ({ latitude, longitude }) {
+      this.latitude = latitude
+      this.longitude = longitude
     },
     methods: {
+      handleToCurrentCity () {
+        const { latitude, longitude, currentCity } = this
+        const params = {
+          latitude,
+          longitude,
+          city: currentCity
+        }
+        this.getChooseCityVal(params)
+      },
       ...mapActions({
         getLocalLocation: 'getLocalLocation'
       }),
@@ -57,7 +79,7 @@
         wx.navigateBack()
       },
       // 滚动 伪锚点链接
-      href (index) {
+      handleToHref (index) {
         if (document.getElementById(index)) {
           let height = document.getElementById(index).offsetTop - document.getElementById("current_city").offsetHeight || 0
           this.$refs.hotelCitycontainer.scrollTo(0, height)
@@ -89,7 +111,7 @@
   min-height: 100vh;
   .float_word {
     position: absolute;
-    top: 30rpx;
+    top: 210rpx;
     right: 0;
     z-index: 99;
     width: 44rpx;
@@ -127,13 +149,36 @@
       color: #999;
     }
   }
+  .city-items {
+    position: relative;
+    padding: 34rpx 20rpx 32rpx 32rpx;
+    background-color: #f0f2f7;
+    &__title {
+      font-size: 28rpx;
+      color: #999;
+    }
+    &__content {
+      display: flex;
+      &_value {
+        width: 170rpx;
+        height: 60rpx;
+        line-height: 60rpx;
+        border-radius: 30rpx;
+        text-align: center;
+        background-color: #fff;
+        font-size: 28rpx;
+        color: #333;
+        margin-top: 22rpx;
+      }
+    }
+  }
   .city-list {
     &__item {
       &_word {
         padding: 10rpx 0 10rpx 30rpx;
         position: relative;
         font-size: 28rpx;
-        background-color: #F6F6F6;
+        background-color: #f0f2f7;
         color: #999;
       }
       &_value {
@@ -141,6 +186,7 @@
         line-height: 100rpx;
         position: relative;
         padding-left: 80rpx;
+        color: #333;
         &:not(:last-child)::after {
           content: '';
           transform: scaleY(0.5);

@@ -17,7 +17,7 @@
     .group-item {
       position: relative;
       margin-top: 15rpx;
-      padding: 0 50rpx 36rpx;
+      padding: 0 50rpx 40rpx;
       background-color: #fff;
       &__hd {
         position: relative;
@@ -76,15 +76,20 @@
         }
       }
       &__bd {
+        position: relative;
         color: #333;
-        font-size: 24rpx;
+        font-size: 30rpx;
         .info {
           font-size: 28rpx;
           display: flex;
           justify-content: space-between;
           margin: 22rpx 0 32rpx;
+          font-size: 28rpx;
           .name {
             margin-right: 40rpx;
+          }
+          .info-scan {
+            color: #999;
           }
         }
         .result-title {
@@ -95,6 +100,12 @@
           text {
             margin-left: 44rpx;
           }
+        }
+        .more-text {
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          color: #1A61CD;
         }
       }
     }
@@ -129,8 +140,8 @@
     </div>
     <div class="groups">
       <template v-if="scanList.length">
-        <div class="group-item" v-for="(item, index) in scanList" :key="index">
-          <div class="group-item__hd" @tap.stop="handleToDetailOrCheck(item, index)">
+        <div class="group-item" v-for="(item, index) in scanList" :key="index" @tap.stop="handleToDetailOrCheck(item, index)">
+          <div class="group-item__hd">
             <div class="radio-default" v-if="hasRadio">
               <image class="radio-check" src="../images/radio-check.png" v-if="item.isCheck"></image>
             </div>
@@ -141,11 +152,12 @@
           <div class="group-item__bd">
             <div class="info">
               <div class="name">{{ item.userName }}</div>
-              <div class="">检测日期：{{ item.scanTime }}</div>
+              <div class="info-scan">检测日期：{{ item.scanTime }}</div>
             </div>
             <div class="result-title">诊断结果</div>
             <div class="result-info">左脚<text>{{ item.leftFooterResult }}</text></div>
             <div class="result-info">右脚<text>{{ item.rightFooterResult }}</text></div>
+            <div class="more-text" v-if="!hasRadio">查看详情</div>
           </div>
         </div>
 
@@ -217,7 +229,7 @@
           this.scanList[index].isCheck = true
         } else {
           this.updateKey({
-            key: 'currentScanItem',
+            key: 'scanDetail',
             val: item
           })
           wxutils.backOrNavigate('/pages/footShape')

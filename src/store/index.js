@@ -4,6 +4,7 @@ import wxApi from '../api/wxApi'
 export default new Vuex.Store({
   state: {
     currentScanItem: '',
+    scanDetail: '',
     currentSkuItem: '',
     currentAddress: ''
   },

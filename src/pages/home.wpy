@@ -3,14 +3,14 @@
     <div class="home-page__banner">
       <image class="xiedian" src="{{ productImg.image }}"></image>
       
-      <navigator url="./onlineOrder" class="online-order">在线下单</navigator>
+      <navigator open-type="switchTab" url="./onlineOrder" class="online-order">在线下单</navigator>
     </div>
 
     <div class="home-page__list">
       <div class="cell-title">
-        <image class="cell-title__location" src="../images/location.png"></image>
-        <div class="cell-title__address">{{ currentCity }}</div>
-        <div class="cell-title__tip">当前定位城市</div>
+        <image class="cell-title__location" src="../images/location.png" @tap.stop="handleToChooseCity"></image>
+        <div class="cell-title__address" @tap.stop="handleToChooseCity">{{ currentCity }}</div>
+        <div class="cell-title__tip" @tap.stop="handleToChooseCity">当前定位城市</div>
         <div class="cell-title__footer" @tap.stop="handleToChooseCity">更多测量点</div>
       </div>
       <div class="cell-list" v-for="item in locationList" :key="item" @tap="handleOpenShop(item)">
@@ -58,9 +58,6 @@
 
   wepy.page({
     store,
-    config: {
-      navigationBarTitleText: '首页'
-    },
     data: {
       latitude: '',
       longitude: '',
@@ -106,6 +103,7 @@
         this.start = 1
         this.latitude = res.latitude
         this.longitude = res.longitude
+        this.currentCity = res.city
         this.getLocationList()
       })
     },
@@ -117,7 +115,8 @@
         getLocalLocation: 'getLocalLocation'
       }),
       handleToChooseCity () {
-        wxutils.backOrNavigate('/pages/citysChoose')
+        const { latitude, longitude } = this
+        wxutils.backOrNavigate(`/pages/citysChoose?latitude=${latitude}&longitude=${longitude}`)
       },
       async getLocationList () {
         let { latitude, longitude, start, locationList } = this
@@ -161,7 +160,7 @@
 </script>
 <config>
 {
-  navigationBarTitleText: '主页',
+  navigationBarTitleText: '足部检测',
   enablePullDownRefresh: true,
   usingComponents: {
     "lxzw-stepper": '~@/packages/stepper/index',
@@ -179,8 +178,10 @@
   background-color: #E7E7E7;
   &__banner {
     position: relative;
+    height: 618rpx;
     image {
       width: 100%;
+      height: 100%;
     }
     .online-order {
       position: absolute;
@@ -198,6 +199,7 @@
   }
   &__list {
     padding: 0 16rpx;
+    margin-bottom: 120rpx;
     .cell-title {
       position: relative;
       display: flex;
@@ -207,12 +209,12 @@
       &__location {
         width: 25rpx;
         height: 32rpx;
-        margin-right: 21rpx;
+        padding-right: 21rpx;
       }
       &__address {
         color: #1A61CD;
         font-size: 30rpx;
-        margin-right: 32rpx;
+        padding-right: 32rpx;
       }
       &__tip {
         font-size: 24rpx;

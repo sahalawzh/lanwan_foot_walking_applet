@@ -23,7 +23,7 @@
         <div class="icon-arrow"></div>
       </div> -->
       <navigator url="./address" hover-class="none" class="items-list">
-        <image class="list-icon" src="../images/location.png"></image>
+        <image class="list-icon" src="../images/mine_location.png"></image>
         <div>收货地址</div>
         <div class="icon-arrow"></div>
       </navigator>
@@ -91,6 +91,7 @@
       position: absolute;
       top: 52rpx;
       left: calc((100% - 102rpx) / 2);
+      text-align: center;
       &__head {
         width: 102rpx;
         height: 102rpx;
@@ -114,9 +115,9 @@
     background-color: #fff;
     &-list {
       position: relative;
-      height: 80rpx;
-      line-height: 80rpx;
-      font-size: 24rpx;
+      height: 102rpx;
+      line-height: 102rpx;
+      font-size: 28rpx;
       color: #333;
       display: flex;
       align-items: center;

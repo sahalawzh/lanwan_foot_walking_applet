@@ -1,15 +1,15 @@
 <!--miniprogram/customTabBar/index.wxml-->
-<view class="tab-bar">
+<view class="tab-bar {{ isModelIPX ? 'tab-bar__heightX' : '' }}">
   <block wx:for="{{tabbar.list}}" wx:key="{{item}}">
-    <navigator wx:if="{{item.pagePath}}" hover-class="none" url="{{item.pagePath}}" style="color:{{item.selected ? tabbar.selectedColor : tabbar.color}}" open-type="switchTab" class="tab-bar-item">
+    <navigator hover-class="none" url="{{item.pagePath}}" style="color:{{item.selected ? tabbar.selectedColor : tabbar.color}}" open-type="switchTab" class="tab-bar-item">
       <image class="tab-icon-{{index}}" mode="aspectFill" src="{{item.selected ? item.selectedIconPath : item.iconPath}}"></image>
       <view class="tab-text">{{item.text}}</view>
     </navigator>
 
-    <navigator wx:else target="miniProgram" hover-class="none" path="{{toMiniPage}}" app-id="{{appid}}" class="tab-bar-item">
+    <!-- <navigator wx:else target="miniProgram" hover-class="none" path="{{toMiniPage}}" app-id="{{appid}}" class="tab-bar-item">
       <image class="tab-icon-{{index}}" mode="aspectFill" src="{{item.selected ? item.selectedIconPath : item.iconPath}}"></image>
       <view class="tab-text">{{item.text}}</view>
-    </navigator>
+    </navigator> -->
   </block>
 
 </view>

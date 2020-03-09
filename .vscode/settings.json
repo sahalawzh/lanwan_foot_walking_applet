@@ -1,0 +1,18 @@
+{
+  // vscode默认启用了根据文件类型自动设置tabsize的选项
+  "editor.detectIndentation": false,
+  // 重新设定tabsize
+  "editor.tabSize": 2,
+  // #每次保存的时候自动格式化
+  "editor.formatOnSave": true,
+  // 在前缀匹配时进行 Tab 补全
+  "editor.tabCompletion": "onlySnippets",
+  // #让函数(名)和后面的括号之间加个空格
+  "javascript.format.insertSpaceBeforeFunctionParenthesis": true,
+  // 关闭文件自动保存
+  "files.autoSave": "off",
+  // import路径移动或者重命名时，自动更新
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  //  #让函数(名)和后面的括号之间加个空格
+  "javascript.format.insertSpaceBeforeFunctionParenthesis": true,
+}

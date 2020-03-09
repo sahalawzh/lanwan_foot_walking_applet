@@ -114,6 +114,7 @@
 </template>
 <config>
 {
+  navigationBarTitleText: '地址管理',
   usingComponents: {
     "elip": '~@/packages/elip',
     "lxzw-popup": '~@/packages/popup'
@@ -129,9 +130,6 @@
   
   wepy.page({
     store,
-    config: {
-      navigationBarTitleText: '地址管理'
-    },
     data: {
       addressList: [],
       showAdd: false,
@@ -193,6 +191,7 @@
                   that.addressList[0].isDefault = 0
                 }
                 that.showAdd = false
+                eventHub.$emit('acceptFromAddressDelId', id)
               }).catch(e => {
                 console.log(e)
                 wx.showToast({title: '删除失败'})
@@ -276,19 +275,28 @@
           if (isEdit) {
             args.id = id
           }
-          await isEdit ? wxApi.putAddressupdate(args) : wxApi.postAddressAdd(args)
-          if (this.singleInfo.isDefault === 0) {
-            addressList.forEach(item => {
-              item.isDefault = 1
-            })
-            this.singleInfo.isDefault = 0
+          const resId = isEdit ? await wxApi.putAddressupdate(args) : await wxApi.postAddressAdd(args)
+          if (!this.isEdit) {
+            this.singleInfo.id = resId
+          }
+          if (this.addressList.length) {
+            const lastCheckAddress = this.addressList.filter(item => item.isDefault === 0)[0]
+            if (lastCheckAddress && lastCheckAddress.id !== this.singleInfo.id) {
+              if (this.singleInfo.isDefault === 0) {
+                this.addressList.forEach(item => {
+                  item.isDefault = 1
+                })
+                this.singleInfo.isDefault = 0
+              }
+            }
           }
           if (isEdit) {
-            this.$set(addressList, editIndex, {...addressList[editIndex], ...this.singleInfo})
+            this.$set(addressList, editIndex, this.singleInfo)
           } else {
             addressList.push(this.singleInfo)
           }
           if (isFirstAdd) { // 第一次添加
+            eventHub.$emit('acceptFromAddress', this.singleInfo)
             this.goNextPage()
           }
           wx.hideLoading()
