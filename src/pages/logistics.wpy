@@ -2,7 +2,7 @@
   <div class="page-logistics">
     <div class="logistics-header">
       <div class="logistics-product">
-        
+
         <div class="logistics-product__status" v-if="logistics.state === '2'">运输中</div>
         <div class="logistics-product__status" v-else-if="logistics.state === '3'">已签收</div>
         <div class="logistics-product__status" v-else-if="logistics.state === '4'">问题件</div>
@@ -24,7 +24,7 @@
             <div class="time-day">{{ item.date }}</div>
             <div class="time-detail">{{ item.time }}</div>
           </div>
-          
+
           <div class="logo">
             <div class="logo-circle">
               <div class="logo-circle__default"></div>
@@ -34,10 +34,10 @@
 
           <div class="info">{{ item.AcceptStation }}</div>
         </div>
-        
+
       </div>
     </div>
-  </div> 
+  </div>
 </template>
 <config>
 {
@@ -63,7 +63,7 @@
             title: '加载中',
             mask: true
           })
-          const {  orderNo } = this
+          const { orderNo } = this
           const opts = {
             orderNo
           }

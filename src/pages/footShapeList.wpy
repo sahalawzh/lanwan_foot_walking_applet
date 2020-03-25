@@ -6,26 +6,23 @@
   </div>
 </template>
 <script>
-  import wepy from '@wepy/core'
-  import http from '../common/http'
-  import wxApi from '../api/wxApi'
+import wepy from '@wepy/core'
 
-  wepy.page({
-    data: {
-      tabbar: {},
-      scanList: []
-    },
-    created () {
-      // 隐藏系统tabbar
-      wx.hideTabBar()
-      this.tabbar = this.$app.$options.globalData.tabBar
-    },
-    attached () {
-      this.$app.editTabbar()
-    },
-    methods: {
-    }
-  })
+wepy.page({
+  data: {
+    tabbar: {},
+    scanList: []
+  },
+  created() {
+    // 隐藏系统tabbar
+    wx.hideTabBar()
+    this.tabbar = this.$app.$options.globalData.tabBar
+  },
+  attached() {
+    this.$app.editTabbar()
+  },
+  methods: {}
+})
 </script>
 <style lang="less" scoped>
 .shape-page {
@@ -46,4 +43,3 @@
   }
 }
 </config>
-

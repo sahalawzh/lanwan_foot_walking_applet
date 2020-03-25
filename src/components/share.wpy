@@ -1,0 +1,112 @@
+<style lang="less">
+.share-box {
+  width: 750rpx;
+  padding-bottom: 84rpx;
+  background-color: #fff;
+  &__item {
+    position: relative;
+    padding: 30rpx 0;
+    text-align: center;
+    color: #4a4a4a;
+    font-size: 28rpx;
+    button {
+      font-size: 28rpx;
+      color: #4a4a4a;
+    }
+    &:not(:last-child)::after {
+      position: absolute;
+      content: '';
+      height: 1rpx;
+      width: 100%;
+      left: 0;
+      bottom: 0;
+      transform: scaleY(0.5);
+      background-color: #ccc;
+    }
+    .ico_share_img {
+      width: 36rpx;
+      height: 36rpx;
+      margin-bottom: 12rpx;
+    }
+  }
+  .open-type-btn {
+    padding-left: 0;
+    padding-right: 0;
+    line-height: normal;
+    background-color: inherit;
+    &::after {
+      border: none;
+    }
+  }
+}
+</style>
+<template>
+  <lwzx-popup class="wow_share"
+              position="bottom"
+              show-close="false"
+              full="false"
+              gaps="{{[0]}}"
+              status="{{shareStatus}}"
+              @popupclose.stop="shareStatus = 'hide'"
+              border-radius="false">
+    <div class="share-box">
+      <div class="share-box__item"
+           @tap.stop="handleSharePoster">
+        <image class="ico_share_img"
+               src="../images/ico_share_img.png"
+               mode="aspectFill"></image>
+        <div>生成分享海报</div>
+      </div>
+      <div class="share-box__item">
+        <button open-type="share"
+                class="open-type-btn">
+          <div>转发</div>
+        </button>
+      </div>
+    </div>
+  </lwzx-popup>
+</template>
+<script>
+import wepy from '@wepy/core'
+import wxApi from '@/api/wxApi'
+wepy.component({
+  data: {
+    shareStatus: 'hide'
+  },
+  methods: {
+    async handleSharePoster () {
+      try {
+        wx.showLoading({
+          title: '生成中',
+          mask: true
+        })
+        const opts = {
+          type: 'spu',
+          page: 'pages/onlineOrder'
+        }
+        const { data } = await wxApi.postSharePoster(opts)
+        wx.hideLoading()
+        this.shareStatus = 'hide'
+        wx.previewImage({
+          current: data,
+          urls: [data]
+        })
+        this.$apply()
+      } catch (error) {
+        console.log(error)
+        wx.hideLoading()
+      }
+    },
+    handleOpenShare () {
+      this.shareStatus = 'show'
+    }
+  }
+})
+</script>
+<config>
+{
+  usingComponents: {
+    "lwzx-popup": '~@/packages/popup'
+  }
+}
+</config>

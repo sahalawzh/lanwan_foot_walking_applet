@@ -1,47 +1,48 @@
 <template>
   <div class="shape-page">
-    <search-item :hasRadio.sync="hasRadio" :currentItem.sync="currentItem" @scan-data.user="hadnleScanListData" ></search-item>
+    <search-item :hasRadio.sync="hasRadio"
+                 :currentItem.sync="currentItem"
+                 @scan-data.user="hadnleScanListData"></search-item>
 
-    <div class="btn-container" v-if="hasData">
-      <div class="comfirm-btn" @tap.stop="handleToConfirm">确定</div>
+    <div class="btn-container"
+         v-if="hasData">
+      <div class="comfirm-btn"
+           @tap.stop="handleToConfirm">确定</div>
     </div>
   </div>
 </template>
 <script>
-  import wepy from '@wepy/core'
-  import http from '../common/http'
-  import wxApi from '../api/wxApi'
-  import wxutils from '../utils/wxutils'
-  import eventHub from '../common/eventHub'
+import wepy from '@wepy/core'
+import eventHub from '../common/eventHub'
 
-  wepy.page({
-    data: {
-      hasRadio: true,
-      hasData: false,
-      scanData: [],
-      currentItem: ''
-    },
-    created () {
-    },
-    methods: {
-      handleToConfirm () {
-        let someCheck = this.scanData.some(item => item.isCheck)
-        if (!someCheck) {
-          return wx.showToast({
-            title: '还未选择一项扫描数据',
-            icon: 'none'
-          })
-        }
-        let currentItem = this.scanData.filter(item => item.isCheck)[0]
-        eventHub.$emit('acceptDataFromSelectScan', currentItem)
-        wx.switchTab({url: '/pages/onlineOrder'})
-      },
-      hadnleScanListData (data) {
-        this.scanData = data
-        return this.hasData = data.length
+wepy.page({
+  data: {
+    hasRadio: true,
+    hasData: false,
+    scanData: [],
+    currentItem: ''
+  },
+  created () {
+  },
+  methods: {
+    handleToConfirm () {
+      let someCheck = this.scanData.some(item => item.isCheck)
+      if (!someCheck) {
+        return wx.showToast({
+          title: '还未选择一项扫描数据',
+          icon: 'none'
+        })
       }
+      let currentItem = this.scanData.filter(item => item.isCheck)[0]
+      eventHub.$emit('acceptDataFromSelectScan', currentItem)
+      wx.switchTab({ url: '/pages/onlineOrder' })
+    },
+    hadnleScanListData (data) {
+      this.scanData = data
+      this.hasData = data.length
     }
-  })
+  }
+})
 </script>
 <style lang="less" scoped>
 .shape-page {
@@ -58,10 +59,10 @@
     padding: 34rpx 40rpx 24rpx;
     width: 100%;
     box-sizing: border-box;
-    background-color: #E7E7E7;
+    background-color: #e7e7e7;
     z-index: 99;
     .comfirm-btn {
-      background-color: #1A5DE1;
+      background-color: #1a5de1;
       color: #fff;
       height: 80rpx;
       line-height: 80rpx;
@@ -80,4 +81,3 @@
   }
 }
 </config>
-

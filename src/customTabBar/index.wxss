@@ -8,6 +8,7 @@
   color: #666;
   z-index: 997;
 }
+
 .tab-bar-item {
   position: relative;
   flex: 1;
@@ -18,9 +19,11 @@
   padding-top: 15rpx;
   z-index: 997;
 }
+
 .tab-bar.tab-bar__heightX {
-  height: 130rpx;
+  height: 150rpx;
 }
+
 .tab-bar.tab-bar__heightX .tab-bar-item {
   padding-top: 20rpx;
 }

@@ -5,10 +5,10 @@
     padding: 20rpx 48rpx;
     background-color: #fff;
     .search-control {
-      height:70rpx;
+      height: 70rpx;
       line-height: 70rpx;
-      background-color:rgba(238,238,238,1);
-      border-radius:35rpx;
+      background-color: rgba(238, 238, 238, 1);
+      border-radius: 35rpx;
       padding-left: 34rpx;
       font-size: 30rpx;
     }
@@ -27,7 +27,7 @@
         line-height: 96rpx;
         &::after {
           position: absolute;
-          content: "";
+          content: '';
           height: 1rpx;
           width: 100%;
           left: 0;
@@ -51,11 +51,11 @@
           }
         }
         .tag {
-          width:120rpx;
-          height:43rpx;
+          width: 120rpx;
+          height: 43rpx;
           line-height: 43rpx;
-          background:rgba(30,177,239,1);
-          border-radius:10rpx;
+          background: rgba(30, 177, 239, 1);
+          border-radius: 10rpx;
           color: #fff;
           font-size: 24rpx;
           text-align: center;
@@ -93,7 +93,7 @@
           }
         }
         .result-title {
-          padding-bottom: 4rpx
+          padding-bottom: 4rpx;
         }
         .result-info {
           margin-top: 16rpx;
@@ -105,7 +105,7 @@
           position: absolute;
           right: 0;
           bottom: 0;
-          color: #1A61CD;
+          color: #1a61cd;
         }
       }
     }
@@ -122,10 +122,10 @@
         margin-top: 90rpx;
       }
       &__point {
-        color: #1A5DE1;
+        color: #1a5de1;
         font-size: 28rpx;
         padding-bottom: 2rpx;
-        border-bottom: 1rpx solid #1A5DE1;
+        border-bottom: 1rpx solid #1a5de1;
         display: inline-block;
         margin-top: 23rpx;
       }
@@ -136,18 +136,29 @@
 <template>
   <div class="search-list">
     <div class="search-box">
-      <input type="text" confirm-type="search" bindconfirm="handleToSearch" class="search-control" placeholder="搜索姓名">
+      <input type="text"
+             confirm-type="search"
+             bindconfirm="handleToSearch"
+             class="search-control"
+             placeholder="搜索姓名" />
     </div>
     <div class="groups">
       <template v-if="scanList.length">
-        <div class="group-item" v-for="(item, index) in scanList" :key="index" @tap.stop="handleToDetailOrCheck(item, index)">
+        <div class="group-item"
+             v-for="(item, index) in scanList"
+             :key="index"
+             @tap.stop="handleToDetailOrCheck(item, index)">
           <div class="group-item__hd">
-            <div class="radio-default" v-if="hasRadio">
-              <image class="radio-check" src="../images/radio-check.png" v-if="item.isCheck"></image>
+            <div class="radio-default"
+                 v-if="hasRadio">
+              <image class="radio-check"
+                     src="../images/radio-check.png"
+                     v-if="item.isCheck"></image>
             </div>
             <div class="tag">{{ item.tag }}</div>
             <div class="company-name">{{ item.companyName }}</div>
-            <div class="arrow" v-if="!hasRadio"></div>
+            <div class="arrow"
+                 v-if="!hasRadio"></div>
           </div>
           <div class="group-item__bd">
             <div class="info">
@@ -155,93 +166,108 @@
               <div class="info-scan">检测日期：{{ item.scanTime }}</div>
             </div>
             <div class="result-title">诊断结果</div>
-            <div class="result-info">左脚<text>{{ item.leftFooterResult }}</text></div>
-            <div class="result-info">右脚<text>{{ item.rightFooterResult }}</text></div>
-            <div class="more-text" v-if="!hasRadio">查看详情</div>
+            <div class="result-info">
+              左脚<text>{{ item.leftFooterResult }}</text>
+            </div>
+            <div class="result-info">
+              右脚<text>{{ item.rightFooterResult }}</text>
+            </div>
+            <div class="more-text"
+                 v-if="!hasRadio">查看详情</div>
           </div>
         </div>
-
       </template>
-      
-      <div class="empty-box" v-else>
-        <image src="../images/empty-shape.png" class="empty-icon"></image>
+
+      <div class="empty-box"
+           v-else>
+        <image src="../images/empty-shape.png"
+               class="empty-icon"></image>
         <div class="empty-box__line">还没有测量的脚型数据</div>
-        <navigator open-type="switchTab" url="../pages/home" class="empty-box__point">查看附近测量点</navigator>
+        <navigator open-type="switchTab"
+                   url="../pages/home"
+                   class="empty-box__point">查看附近测量点</navigator>
       </div>
-      
     </div>
   </div>
 </template>
 <script>
-  import wepy from '@wepy/core'
-  import wxApi from '../api/wxApi'
-  import store from '../store'
-  import { mapState, mapMutations } from '@wepy/x'
-  import wxutils from '../utils/wxutils'
+import wepy from '@wepy/core'
+import wxApi from '../api/wxApi'
+import store from '../store'
+import { mapState, mapMutations } from '@wepy/x'
+import wxutils from '../utils/wxutils'
 
-  const ArchPattern = {
-    NormalArch: '正常足弓',
-    FlatArch: '扁平足',
-    HighArch: '高足弓'
-  }
+const ArchPattern = {
+  NormalArch: '正常足弓',
+  FlatArch: '扁平足',
+  HighArch: '高足弓'
+}
 
-  const FootStyle = {
-    RomanFoot: '罗马脚',
-    EgyptFoot: '埃及脚',
-    GreeceFoot: '希腊脚',
-    SquareFoot: '方形脚'
-  }
-  wepy.component({
-    store,
-    props: {
-      hasRadio: Boolean
-    },
-    data: {
-      scanList: [],
-      phone: ''
-    },
-    computed: {
-      ...mapState({
-        currentScanItem: 'currentScanItem'
-      })
-    },
-    created () {
-      let loginInfo = getApp().$wepy.$options.globalData.userInfo
-      this.phone = loginInfo.phone
-      this.getScanList()
-    },
-    watch: {
-      scanList (val) {
-        if (val) {
-          this.$emit('scan-data', this.scanList)
-        }
+const FootStyle = {
+  RomanFoot: '罗马脚',
+  EgyptFoot: '埃及脚',
+  GreeceFoot: '希腊脚',
+  SquareFoot: '方形脚'
+}
+wepy.component({
+  store,
+  props: {
+    hasRadio: Boolean
+  },
+  data: {
+    scanList: [],
+    phone: ''
+  },
+  computed: {
+    ...mapState({
+      currentScanItem: 'currentScanItem'
+    })
+  },
+  created () {
+    let loginInfo = getApp().$wepy.$options.globalData.userInfo
+    this.phone = loginInfo.phone
+    this.getScanList()
+  },
+  watch: {
+    scanList (val) {
+      if (val) {
+        this.$emit('scan-data', this.scanList)
+      }
+    }
+  },
+  methods: {
+    ...mapMutations({
+      updateKey: 'updateKey'
+    }),
+    handleToDetailOrCheck (item, index) {
+      if (this.hasRadio) {
+        this.scanList.forEach(item => {
+          item.isCheck = false
+        })
+        this.scanList[index].isCheck = true
+      } else {
+        this.updateKey({
+          key: 'scanDetail',
+          val: item
+        })
+        wxutils.backOrNavigate('/pages/footShape')
       }
     },
-    methods: {
-      ...mapMutations({
-        updateKey: 'updateKey'
-      }),
-      handleToDetailOrCheck (item, index) {
-        if (this.hasRadio) {
-          this.scanList.forEach(item => {
-            item.isCheck = false
-          })
-          this.scanList[index].isCheck = true
-        } else {
-          this.updateKey({
-            key: 'scanDetail',
-            val: item
-          })
-          wxutils.backOrNavigate('/pages/footShape')
-        }
-      },
-      handleScanData (data) {
-        let result = []
-        data && data.length && data.forEach(item => {
+    handleScanData (data) {
+      let result = []
+      data &&
+        data.length &&
+        data.forEach(item => {
           item.jsonData = JSON.parse(item.jsonData)
-          const [ leftFoot, rightFoot ] = item.jsonData
-          item.leftFooterResult = ArchPattern[leftFoot.ArchPattern] + ' ' + FootStyle[leftFoot.FootStyle]
-          item.rightFooterResult = ArchPattern[rightFoot.ArchPattern] + ' ' + FootStyle[rightFoot.FootStyle]
+          const [leftFoot, rightFoot] = item.jsonData
+          item.leftFooterResult =
+            ArchPattern[leftFoot.ArchPattern] +
+            ' ' +
+            FootStyle[leftFoot.FootStyle]
+          item.rightFooterResult =
+            ArchPattern[rightFoot.ArchPattern] +
+            ' ' +
+            FootStyle[rightFoot.FootStyle]
           if (this.hasRadio) {
             item.isCheck = false
             if (this.currentScanItem && item.id === this.currentScanItem.id) {
@@ -250,44 +276,44 @@
           }
           result.push(item)
         })
-        return result
-      },
-      async getScanList () {
-        try {
-          wx.showLoading({
-            title: '加载中',
-            mask: true
-          })
-          const params = {
-            phone: this.phone
-          }
-          const res = await wxApi.getScanResultByPhone(params)
-          this.scanList = this.handleScanData(res)
-          wx.hideLoading()
-        } catch (error) {
-          console.log(error)
-          wx.hideLoading()
+      return result
+    },
+    async getScanList () {
+      try {
+        wx.showLoading({
+          title: '加载中',
+          mask: true
+        })
+        const params = {
+          phone: this.phone
         }
-      },
-      async handleToSearch (e) {
-        const { value } = e.$wx.detail
-        if (!value) this.getScanList()
-        try {
-          wx.showLoading({
-            title: '加载中',
-            mask: true
-          })
-          const params = {
-            username: value
-          }
-          const res = await wxApi.getScanResultByUsername(params)
-          this.scanList = this.handleScanData(res)
-          wx.hideLoading()
-        } catch (error) {
-          console.log(error)
-          wx.hideLoading()
+        const res = await wxApi.getScanResultByPhone(params)
+        this.scanList = this.handleScanData(res)
+        wx.hideLoading()
+      } catch (error) {
+        console.log(error)
+        wx.hideLoading()
+      }
+    },
+    async handleToSearch (e) {
+      const { value } = e.$wx.detail
+      if (!value) this.getScanList()
+      try {
+        wx.showLoading({
+          title: '加载中',
+          mask: true
+        })
+        const params = {
+          username: value
         }
+        const res = await wxApi.getScanResultByUsername(params)
+        this.scanList = this.handleScanData(res)
+        wx.hideLoading()
+      } catch (error) {
+        console.log(error)
+        wx.hideLoading()
       }
     }
-  });
+  }
+})
 </script>

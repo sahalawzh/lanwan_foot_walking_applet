@@ -1,18 +1,26 @@
 <template>
   <div class="page-order">
     <div class="address-container">
-      <navigator url="/pages/address" v-if="addressVO">
+      <navigator url="/pages/address"
+                 v-if="addressVO">
         <div class="address-box font-size--28">
           <div class="address-box__info">
             <text>{{addressVO.recipient}}</text>
             <text class="phone">{{addressVO.phone}}</text>
           </div>
-          <div class="address-detail"><text class="address-detail__default" v-if="addressVO.isDefault === 0">默认</text>{{addressVO.province + addressVO.city + addressVO.detailAddress}}</div>
+          <div class="address-detail"><text class="address-detail__default"
+                  v-if="addressVO.isDefault === 0">默认</text>{{addressVO.province + addressVO.city + addressVO.detailAddress}}</div>
         </div>
-        <image class="address-arrow" src="../images/arrow.png" mode="aspectFill"></image>
+        <image class="address-arrow"
+               src="../images/arrow.png"
+               mode="aspectFill"></image>
       </navigator>
-      <navigator url="/pages/address" class="address-empty" wx:else>
-        <image src="../images/ico_address_empty.png" class="ico_address_empty" mode="aspectFill"></image>
+      <navigator url="/pages/address"
+                 class="address-empty"
+                 wx:else>
+        <image src="../images/ico_address_empty.png"
+               class="ico_address_empty"
+               mode="aspectFill"></image>
         <div class="address-empty__info">还没有收货地址，<text class="label">去添加</text></div>
       </navigator>
     </div>
@@ -22,7 +30,7 @@
         <div class="order-lists-items__item">
           <div class="product-info">
             <div class="order-img"
-            style="background-image: url({{orderInfo.image}})"></div>
+                 style="background-image: url({{orderInfo.image}})"></div>
             <div class="order-info">
               <div class="order-info__title">
                 <elip line="1">{{orderInfo.titleName}}</elip>
@@ -31,7 +39,12 @@
               <div class="order-info__content">
                 <div class="price-wrap">
                   <div>￥{{orderInfo.price}}</div>
-                  <lxzw-stepper class="price-wrap__step" width="24rpx" height="58rpx" min="{{min}}" value="{{num}}" @changenumber.stop="changeQty"></lxzw-stepper>
+                  <lwzx-stepper class="price-wrap__step"
+                                width="24rpx"
+                                height="58rpx"
+                                min="{{min}}"
+                                value="{{num}}"
+                                @changenumber.stop="changeQty"></lwzx-stepper>
                 </div>
                 <div class="name-wrap">
                   <text class="username">{{ orderInfo.username }}</text>
@@ -49,7 +62,11 @@
 
           <div class="order-lists-items__status">
             <div>买家留言：</div>
-            <input type="text" maxlength="100" class="remark" v-model="remark" placeholder="给商家留言，最多100个字">
+            <input type="text"
+                   maxlength="100"
+                   class="remark"
+                   v-model="remark"
+                   placeholder="给商家留言，最多100个字">
           </div>
         </div>
       </div>
@@ -68,7 +85,8 @@
         <div>合计: ￥{{totalPrice}}</div>
       </div>
       <div class="footer-btn">
-        <div class="pay-btn" @tap.stop="hanldeToPay">提交订单</div>
+        <div class="pay-btn"
+             @tap.stop="hanldeToPay">提交订单</div>
       </div>
     </div>
 
@@ -78,156 +96,153 @@
 {
   navigationBarTitleText: '下单',
   usingComponents: {
-    "lxzw-stepper": '~@/packages/stepper/index',
+    "lwzx-stepper": '~@/packages/stepper/index',
     elip: '~@/packages/elip'
   }
 }
 </config>
 <script>
-  import wepy from '@wepy/core'
-  import wxApi from '../api/wxApi'
-  import store from '../store'
-  import { mapState } from '@wepy/x'
-  import eventHub from '../common/eventHub'
-  import wxutils from '../utils/wxutils'
+import wepy from '@wepy/core'
+import wxApi from '../api/wxApi'
+import store from '../store'
+import { mapState } from '@wepy/x'
+import eventHub from '../common/eventHub'
+import wxutils from '../utils/wxutils'
 
-  wepy.page({
-    store,
-    data: {
-      params: '',
-      orderInfo: '',
-      addressVO: '',
-      min: 1,
-      num: 1,
-      remark: '',
-      totalPrice: 0
-    },
-    onLoad (options) {
-      options.scanTime = decodeURIComponent(options.scanTime)
-      this.params = options
-      this.getOrderInfo()
-      if (this.currentAddress) {
-        this.addressVO = this.currentAddress
-      } else {
+wepy.page({
+  store,
+  data: {
+    params: '',
+    orderInfo: '',
+    addressVO: '',
+    min: 1,
+    num: 1,
+    remark: '',
+    totalPrice: 0
+  },
+  onLoad () {
+    this.getOrderInfo()
+    if (this.currentAddress) {
+      this.addressVO = this.currentAddress
+    } else {
+      this.getDefaultAddress()
+    }
+    eventHub.$on('acceptFromAddress', res => {
+      this.addressVO = res
+    })
+    eventHub.$on('acceptFromAddressDelId', delId => {
+      if (this.addressVO && this.addressVO.id === delId) {
         this.getDefaultAddress()
       }
-      eventHub.$on('acceptFromAddress', res => {
-        this.addressVO = res
-      })
-      eventHub.$on('acceptFromAddressDelId', delId => {
-        console.log('delId')
-        console.log(delId)
-        if (this.addressVO && this.addressVO.id === delId) {
-          this.getDefaultAddress()
+    })
+  },
+  created () {
+  },
+  computed: {
+    ...mapState({
+      currentAddress: 'currentAddress'
+    })
+  },
+  methods: {
+    async hanldeToPay () {
+      try {
+        const { addressVO, remark } = this
+        if (!addressVO) {
+          return wx.showToast({
+            title: '还未选择发货地址',
+            icon: 'none'
+          })
         }
-      })
-    },
-    created () {
-    },
-    computed: {
-      ...mapState({
-        currentAddress: 'currentAddress'
-      })
-    },
-    methods: {
-      async hanldeToPay () {
-        try {
-          const { addressVO, remark } = this
-          if (!addressVO) {
-            return wx.showToast({
-              title: '还未选择发货地址',
-              icon: 'none'
-            })
-          }
-          wx.showLoading({
-            title: '提交中',
-            mask: true
+        wx.showLoading({
+          title: '提交中',
+          mask: true
+        })
+        const opts = {
+          addressId: addressVO.id,
+          remark
+        }
+        const res = await wxApi.postAddWxOrder(opts)
+        wxutils.wxPay(res).then(function () {
+          wx.redirectTo({
+            url: '/pages/success?oid=' + res.out_trade_no
           })
-          const opts = {
-            addressId: addressVO.id,
-            remark
-          }
-          const res = await wxApi.postAddWxOrder(opts)
-          wxutils.wxPay(res).then(function () {
-            wx.redirectTo({
-              url: '/pages/success?oid=' + res.out_trade_no
-            })
-          }).catch(function (e) {
-            console.log(e)
-          })
-          wx.hideLoading()
-        } catch (error) {
-          console.log(error)
-          wx.hideLoading()
-          wx.showModal({
-            title: '提示',
-            showCancel: false,
-            content: error.message || '下单失败',
-            success(res) {
-              if (res.confirm) {
-                wx.navigateBack()
-              }
+        }).catch(function (e) {
+          console.log(e)
+        })
+        wx.hideLoading()
+      } catch (error) {
+        console.log(error)
+        wx.hideLoading()
+        wx.showModal({
+          title: '提示',
+          showCancel: false,
+          content: error.message || '下单失败',
+          success (res) {
+            if (res.confirm) {
+              wx.navigateBack()
             }
-          })
-        }
-      },
-      async getDefaultAddress () {
-        try {
-          const res = await wxApi.getDefaultAddress()
-          this.addressVO = res || ''
-          console.log(this.addressVO)
-        } catch (error) {
-          console.log(error)
-        }
-      },
-      async changeQty (e) {
-        const { value } = e.$wx.detail
-        if (this.num === value) {
-          return
-        }
-        let nowQty = this.num
-        this.num = value
-        let opts = {
-          num: value
-        }
-        if (value > nowQty) { // 新增
-          opts.cartType = 0
-        } else {
-          opts.cartType = 1
-        }
-        try {
-          const res = await wxApi.putUpdateWxNum(opts)
-          this.orderInfo.num = value
-          this.totalPrice = res
-        } catch (error) {
-          this.num = this.orderInfo.num
-          console.log(error)
-        }
-      },
-      async getOrderInfo () {
-        try {
-          wx.showLoading({
-            title: '加载中',
-            mask: true
-          })
-          const res = await wxApi.postAddWxCart(this.params)
-          this.num = res.num
-          this.totalPrice = res.price
-          this.orderInfo = res
-          wx.hideLoading()
-        } catch (error) {
-          console.log(error)
-          wx.hideLoading()
-        }
+          }
+        })
+      }
+    },
+    async getDefaultAddress () {
+      try {
+        const res = await wxApi.getDefaultAddress()
+        this.addressVO = res || ''
+        console.log(this.addressVO)
+      } catch (error) {
+        console.log(error)
+      }
+    },
+    async changeQty (e) {
+      const { value } = e.$wx.detail
+      if (this.num === value) {
+        return
+      }
+      let nowQty = this.num
+      this.num = value
+      let opts = {
+        num: value
+      }
+      if (value > nowQty) { // 新增
+        opts.cartType = 0
+      } else {
+        opts.cartType = 1
+      }
+      try {
+        const res = await wxApi.putupdateNum(opts)
+        this.orderInfo.num = value
+        this.totalPrice = res
+      } catch (error) {
+        this.num = this.orderInfo.num
+        console.log(error)
+      }
+    },
+    async getOrderInfo () {
+      try {
+        wx.showLoading({
+          title: '加载中',
+          mask: true
+        })
+        const res = await wxApi.getCart()
+        const cartPrice = await wxApi.getCartPrice()
+        this.num = res.num
+        this.totalPrice = cartPrice
+        this.orderInfo = res
+        wx.hideLoading()
+      } catch (error) {
+        console.log(error)
+        wx.hideLoading()
       }
     }
-  })
+  }
+})
 </script>
 <style lang="less" scoped>
 .page-order {
   position: absolute;
-  width:100%;
-  background-color:#f0f2f7;
+  width: 100%;
+  background-color: #f0f2f7;
   padding-bottom: 280rpx;
   &-choice {
     height: 100rpx;
@@ -240,14 +255,26 @@
     position: relative;
     background-color: #fff;
     margin-top: 20rpx;
-    &:after{
+    &:after {
       content: '';
       position: absolute;
       left: 0;
       bottom: 0;
       height: 6rpx;
       width: 100%;
-      background: linear-gradient(30deg, transparent 0, transparent 5rpx, #1762ce 5rpx, #1762ce 25rpx, transparent 25rpx, transparent 30rpx, #ef0d6a 30rpx, #ef0d6a 50rpx, transparent 50rpx, transparent 55rpx);
+      background: linear-gradient(
+        30deg,
+        transparent 0,
+        transparent 5rpx,
+        #1762ce 5rpx,
+        #1762ce 25rpx,
+        transparent 25rpx,
+        transparent 30rpx,
+        #ef0d6a 30rpx,
+        #ef0d6a 50rpx,
+        transparent 50rpx,
+        transparent 55rpx
+      );
       background-size: 100rpx 4rpx;
       background-color: #fff;
       background-position: bottom;
@@ -299,7 +326,7 @@
         margin-top: 16rpx;
         color: #333;
         .label {
-          color: #1A61CD;
+          color: #1a61cd;
         }
       }
     }
@@ -309,7 +336,7 @@
     padding-bottom: 180rpx;
     &-items__item {
       position: relative;
-      background-color:#fff;
+      background-color: #fff;
       margin-top: 26rpx;
       border-radius: 18rpx;
       .product-info {
@@ -318,30 +345,30 @@
         padding: 22rpx 30rpx 22rpx 42rpx;
         &::after {
           position: absolute;
-          content: "";
+          content: '';
           height: 1rpx;
           width: 100%;
           left: 0;
           bottom: 0;
           transform: scaleY(0.5);
-          background-color: #DEDEE4;
+          background-color: #dedee4;
         }
       }
       .order-img {
-        position:relative;
-        background-repeat:no-repeat;
-        background-position:center;
-        background-size:cover;
-        width:190rpx;
-        height:156rpx;
-        margin-right:40rpx;
-        overflow:hidden;
-        border-radius:7rpx;
+        position: relative;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: cover;
+        width: 190rpx;
+        height: 156rpx;
+        margin-right: 40rpx;
+        overflow: hidden;
+        border-radius: 7rpx;
       }
       .order-info {
         position: relative;
         flex: 1;
-        overflow:hidden;
+        overflow: hidden;
         padding-top: 8rpx;
         &__title {
           font-size: 28rpx;
@@ -377,7 +404,7 @@
           .sku-list {
             margin-top: 8rpx;
             &__item {
-              margin-top: 14rpx
+              margin-top: 14rpx;
             }
           }
         }
@@ -396,13 +423,13 @@
       margin-right: 6rpx;
       &:not(:last-child)::after {
         position: absolute;
-        content: "";
+        content: '';
         height: 1rpx;
         width: 100%;
         left: 0;
         bottom: 0;
         transform: scaleY(0.5);
-        background-color: #DEDEE4;
+        background-color: #dedee4;
       }
       .remark {
         color: #9b9b9b;
@@ -425,7 +452,7 @@
       line-height: 72rpx;
       float: left;
       font-size: 30rpx;
-      color: #E1116A;
+      color: #e1116a;
     }
     &-btn {
       float: right;
@@ -453,7 +480,8 @@
     .label {
       color: #494949;
     }
-    .value, .value-placeholder {
+    .value,
+    .value-placeholder {
       color: #888;
       text-align: right;
     }

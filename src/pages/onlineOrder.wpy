@@ -1,112 +1,155 @@
 <template>
   <div class="order-page">
     <div class="order-page__banner">
-      <image class="xiedian" src="{{ detail.image }}"></image>
+      <image class="xiedian"
+             src="{{ detail.image }}"></image>
     </div>
 
-    <div class="product-info" v-if="detail">
+    <div class="product-info"
+         v-if="detail">
       <div class="product-info__title">{{ detail.title }}</div>
       <div class="product-info__detail">
         <div class="price">￥{{ detail.price }}</div>
-        <div class="market-price" wx:if="{{ detail.originalPrice > detail.price }}">原价 ￥{{ detail.originalPrice }}</div>
+        <div class="market-price"
+             wx:if="{{ detail.originalPrice > detail.price }}">
+          原价 ￥{{ detail.originalPrice }}
+        </div>
       </div>
     </div>
-    
+
     <div class="product-cell">
       <div class="product-cell__hd">
         体验数据
       </div>
-      <div class="product-cell__bd" @tap.stop="handleSearchScan">
-        <text v-if="currentScanData">已选“{{currentScanData.userName}}, {{currentScanData.scanTime}}”</text>
+      <div class="product-cell__bd"
+           @tap.stop="handleSearchScan">
+        <text v-if="currentScanData">已选“{{ currentScanData.userName }},
+          {{ currentScanData.scanTime }}”</text>
         <text v-else>选择本次打印的脚型数据</text>
       </div>
-      <div class="product-cell__ft" @tap.stop="handleSearchScan"></div>
+      <div class="product-cell__ft"
+           @tap.stop="handleSearchScan"></div>
     </div>
     <div class="product-cell">
       <div class="product-cell__hd">
         选择
       </div>
-      <div class="product-cell__bd" @tap.stop="isOpenSku = true">
-        <text v-if="currentSkuData.length">已选“{{currentSkuData[0]}}”“{{currentSkuData[1]}}”“{{currentSkuData[2]}}”“{{currentSkuData[3]}}”</text>
+      <div class="product-cell__bd"
+           @tap.stop="isOpenSku = true">
+        <text v-if="currentSkuData.length">已选“{{ currentSkuData[0] }}”“{{ currentSkuData[1] }}”“{{
+          currentSkuData[2]
+          }}”“{{ currentSkuData[3] }}”</text>
         <text v-else>请选择人群 鞋型 功能 鞋码</text>
       </div>
-      <div class="product-cell__ft" @tap.stop="isOpenSku = true"></div>
+      <div class="product-cell__ft"
+           @tap.stop="isOpenSku = true"></div>
     </div>
 
     <div class="tab-label">
       <div class="collect-tabs">
         <div class="font-size--24 collect-tabs__panle"
-          :class="{'active': defaultSelectTab === 'product'}">商品介绍</div>
+             :class="{ active: defaultSelectTab === 'product' }">
+          商品介绍
+        </div>
         <div class="font-size--24 collect-tabs__panle"
-        v-if="false"
-        :class="{'active': defaultSelectTab === 'commet'}"><navigator url="" hover-class="none">评价</navigator></div>
+             v-if="false"
+             :class="{ active: defaultSelectTab === 'commet' }">
+          <navigator url=""
+                     hover-class="none">评价</navigator>
+        </div>
       </div>
       <div class="tab-label-detail">
-        <image bindload="imageLoad" style="width: {{imageWidth}}px; height: {{imageHeight}}px" src="{{detail.introductionImage}}" mode="aspectFill"></image>
+        <image bindload="imageLoad"
+               style="width: {{imageWidth}}px; height: {{imageHeight}}px"
+               src="{{detail.introductionImage}}"
+               mode="aspectFill"></image>
       </div>
     </div>
-
 
     <div class="footer">
       <div class="footer-box">
         <div class="controls">
-          
-          <button class="controls-item open-type-btn" open-type="contact">
-            <image mode="aspectFill" class="controls-box controls-wechat" src="../images/ico_viewtimes.png"></image>
+          <button class="controls-item open-type-btn"
+                  open-type="contact">
+            <image mode="aspectFill"
+                   class="controls-box controls-wechat"
+                   src="../images/ico_viewtimes.png"></image>
           </button>
 
-          <button open-type="share" class="controls-item open-type-btn" v-if="false">
-            <image mode="aspectFill" class="controls-box controls-share" src="../images/ico_share.png"></image>
-          </button>
-          <!-- <div class="controls-item">
-            <image mode="aspectFill" class="controls-box controls-share" src="../images/ico_share.png"></image>
-            <div class="controls-item__sign font-size--24">366</div>
-          </div> -->
+          <div class="controls-item"
+               @tap.stop="handleToShare">
+            <image mode="aspectFill"
+                   class="controls-box controls-share"
+                   src="../images/ico_share.png"></image>
+            <!-- <div class="controls-item__sign font-size--24">366</div> -->
+          </div>
         </div>
         <div class="link">
-          <div class="font-size--32 link-btn" @tap.stop="handleToMake">我要定制</div>
+          <div class="font-size--32 link-btn"
+               @tap.stop="handleToMake">
+            我要定制
+          </div>
         </div>
       </div>
-      
     </div>
 
-    <div class="silder-box {{isOpenSku ? 'isRuleShow' : 'isRuleHide'}}" catchtouchmove="handleTouch">
-      <div class="silder-box-mask" @tap.stop="isOpenSku = false"></div>
+    <div class="silder-box {{isOpenSku ? 'isRuleShow' : 'isRuleHide'}}"
+         catchtouchmove="handleTouch">
+      <div class="silder-box-mask"
+           @tap.stop="isOpenSku = false"></div>
       <div class="silder-box-wrap silder-box-right">
         <div class="silder-container">
-          <scroll-view scroll-y="true" class="scroll-area" style="height: {{slideHeight}}px">
+          <scroll-view scroll-y="true"
+                       class="scroll-area"
+                       style="height: {{slideHeight}}px">
             <div class="product-box">
-              <image mode="aspectFill" class="product-box__img" src="{{detail.image}}"></image>
+              <image mode="aspectFill"
+                     class="product-box__img"
+                     src="{{detail.image}}"></image>
               <div class="product-box__info">
                 <div class="color-price">{{ skuPrice }}</div>
                 <!-- <div class="font-size--24 product-info__number">编号<text class="num">{{detail.productNumber}}</text></div> -->
               </div>
             </div>
 
-            <div class="product-spec" v-for="(item, index) in spec" :key="index">
-              <div class="title">{{item.name}}</div>
+            <div class="product-spec"
+                 v-for="(item, index) in spec"
+                 :key="index">
+              <div class="title">{{ item.name }}</div>
               <div class="spec-items">
                 <div class="spec-item spec-item-{{item.type}}"
-                  v-for="(_item, _index) in item.list"
-                  :key="_index"
-                  @tap.stop="handleToSelect(index, item, _item)"
-                  :class="{'active': specSelect[index] === _item.id, 'has-recommend': _item.isRecommend === 1}">
-                  <image mode="aspectFill" v-if="_item.isRecommend === 1" class="spec-item__recommed" src="../images/ico_recommend.png"></image>
-                  {{_item.name}}
+                     v-for="(_item, _index) in item.list"
+                     :key="_index"
+                     @tap.stop="handleToSelect(index, item, _item)"
+                     :class="{
+                    active: specSelect[index] === _item.id,
+                    'has-recommend': _item.isRecommend === 1
+                  }">
+                  <image mode="aspectFill"
+                         v-if="_item.isRecommend === 1"
+                         class="spec-item__recommed"
+                         src="../images/ico_recommend.png"></image>
+                  {{ _item.name }}
                 </div>
               </div>
             </div>
 
             <div class="product-step is-align-middle is-justify-space-between">
               <div class="title">数量</div>
-              <lxzw-stepper class="product-step__stepper" width="24rpx" height="48rpx" min="{{min}}" value="{{num}}" @changenumber.stop="changeQty"></lxzw-stepper>
+              <lwzx-stepper class="product-step__stepper"
+                            width="24rpx"
+                            height="48rpx"
+                            min="{{min}}"
+                            value="{{num}}"
+                            @changenumber.stop="changeQty"></lwzx-stepper>
             </div>
-      
-            
           </scroll-view>
 
           <div class="btn-wrap">
-            <button class="btn font-size--26" @tap.stop="handleToConfirm">确定</button>
+            <button class="btn font-size--26"
+                    @tap.stop="handleToConfirm">
+              确定
+            </button>
           </div>
         </div>
       </div>
@@ -114,20 +157,36 @@
 
     <custom-tabbar tabbar="{{tabbar}}"></custom-tabbar>
 
-    <lxzw-popup class="address-picker" border-radius="false" full="false" gaps="{{[0]}}" status="{{authStatus}}" locked="true" position="bottom" show-close="false">
-      <div style="width: 750rpx" class="auth-container">
+    <lwzx-popup class="address-picker"
+                border-radius="false"
+                full="false"
+                gaps="{{[0]}}"
+                status="{{authStatus}}"
+                locked="true"
+                position="bottom"
+                show-close="false">
+      <div style="width: 750rpx"
+           class="auth-container">
         <div class="auth-phone">
-          <image class="auth-logo" src="../images/lwzx-logo.png"></image>
+          <image class="auth-logo"
+                 src="../images/lwzx-logo.png"></image>
 
           <div class="auth-btn">
-            <button open-type="getPhoneNumber" plain="true" lang="zh_CN" bindgetphonenumber="getPhoneNumber">
+            <button open-type="getPhoneNumber"
+                    plain="true"
+                    lang="zh_CN"
+                    bindgetphonenumber="getPhoneNumber">
               授权获取手机号码
             </button>
           </div>
-          <div class="auth-tip">注：授权的手机号码要与扫描足部数据时填写的手机号码相同</div>
+          <div class="auth-tip">
+            注：授权的手机号码要与扫描足部数据时填写的手机号码相同
+          </div>
         </div>
       </div>
-    </lxzw-popup>
+    </lwzx-popup>
+
+    <lwzx-share ref="share"></lwzx-share>
   </div>
 </template>
 
@@ -136,107 +195,112 @@
   navigationBarTitleText: '我要定制',
   usingComponents: {
     "custom-tabbar": '~@/customTabBar/index',
-    "lxzw-stepper": '~@/packages/stepper/index',
-    "search-item": '~@/components/searchitem',
-    "lxzw-popup": '~@/packages/popup'
+    "lwzx-stepper": '~@/packages/stepper/index',
+    "lwzx-popup": '~@/packages/popup',
+    "lwzx-share": '~@/components/share'
   }
 }
 </config>
 <script>
-  import wepy from '@wepy/core'
-  import imageUtil from '../utils/image'
-  import wxApi from '../api/wxApi'
-  import wxutils from '../utils/wxutils'
-  import isEmpty from '../utils/isEmpty'
-  import store from '../store'
-  import eventHub from '../common/eventHub'
-  import { mapMutations, mapState } from '@wepy/x'
-  import param from '../utils/param'
-  import wxHttp from '../api/wxHttp'
+import wepy from '@wepy/core'
+import imageUtil from '@/utils/image'
+import wxApi from '@/api/wxApi'
+import wxutils from '@/utils/wxutils'
+import store from '@/store'
+import eventHub from '@/common/eventHub'
+import { mapMutations, mapState } from '@wepy/x'
+import param from '@/utils/param'
+import wxHttp from '@/api/wxHttp'
 
-  wepy.page({
-    store,
-    data: {
-      authStatus: 'hide',
-      tabbar: {},
-      defaultSelectTab: 'product',
-      detail: '',
-      imageWidth: '',
-      imageHeight: '',
-      isOpenSku: false,
-      spec: [],
-      specSelect: [],
-      num: 1,
-      min: 1,
-      skuPrice: 0,
-      currentScanData: '',
-      currentSkuData: []
-    },
-    computed: {
-      ...mapState({
-        currentScanItem: 'currentScanItem'
-      }),
-      slideHeight () {
-        let maxHeight = ''
-        wx.getSystemInfo({
-          success: function (res) {
-            let windowHeight = res.windowHeight
-            maxHeight = windowHeight - 90
-          }
-        })
-        return maxHeight
-      }
-    },
-    onShareAppMessage () {
-      const { detail } = this
-      this.getShareNum()
-      return {
-        title: detail.title,
-        imageUrl: detail.image,
-        path: 'pages/onlineOrder'
-      }
-    },
-    onLoad () {
-      eventHub.$on('acceptDataFromSelectScan', res => {
-        this.updateKey({
-          key: 'currentScanItem',
-          val: res
-        })
-        this.currentScanData = res
-        if (!this.currentSkuData.length) {
-          this.isOpenSku = true
-        } else {
-          this.handleSettle()
+wepy.page({
+  store,
+  data: {
+    authStatus: 'hide',
+    tabbar: {},
+    defaultSelectTab: 'product',
+    detail: '',
+    imageWidth: '',
+    imageHeight: '',
+    isOpenSku: false,
+    spec: [],
+    specSelect: [],
+    num: 1,
+    min: 1,
+    skuPrice: 0,
+    currentScanData: '',
+    currentSkuData: []
+  },
+  computed: {
+    ...mapState({
+      currentScanItem: 'currentScanItem'
+    }),
+    slideHeight () {
+      let maxHeight = ''
+      wx.getSystemInfo({
+        success: function (res) {
+          let windowHeight = res.windowHeight
+          maxHeight = windowHeight - 90
         }
       })
-      if (this.currentScanItem) {
-        this.currentScanData = this.currentScanItem
-      }
-      eventHub.$on('auth-phone', res => {
-        this.authStatus = res
+      return maxHeight
+    }
+  },
+  onShareAppMessage () {
+    const { detail } = this
+    // this.getShareNum()
+    return {
+      title: detail.title,
+      imageUrl: detail.image,
+      path: 'pages/onlineOrder'
+    }
+  },
+  onLoad () {
+    eventHub.$on('acceptDataFromSelectScan', res => {
+      this.updateKey({
+        key: 'currentScanItem',
+        val: res
       })
-    },
-    attached () {
-      this.$app.editTabbar()
-    },
-    created () {
-      wx.hideTabBar()
-      this.tabbar = this.$app.$options.globalData.tabBar
-      wx.showLoading({
-        title: '加载中',
-        mask: true
-      })
-      const opts = {
-        linkType: 1
+      this.currentScanData = res
+      if (!this.currentSkuData.length) {
+        this.isOpenSku = true
+      } else {
+        this.handleSettle()
       }
-      Promise.all([wxApi.getSpu(), wxApi.getListclassiFication(opts)]).then(res => {
-        let [ detail, spec ] =  res
+    })
+    if (this.currentScanItem) {
+      this.currentScanData = this.currentScanItem
+    }
+    eventHub.$on('auth-phone', res => {
+      this.authStatus = res
+    })
+  },
+  attached () {
+    this.$app.editTabbar()
+  },
+  created () {
+    wx.hideTabBar()
+    this.tabbar = this.$app.$options.globalData.tabBar
+    wx.showLoading({
+      title: '加载中',
+      mask: true
+    })
+    const spuOpts = {
+      device: 1
+    }
+    const opts = {
+      linkType: 1
+    }
+    Promise.all([wxApi.getSpu(spuOpts), wxApi.getListclassiFication(opts)])
+      .then(res => {
+        let [detail, spec] = res
         this.detail = detail
         let selectIds = []
         let skuPrice = 0
         spec.forEach(item => {
           let recommenItem = item.list.filter(_item => _item.isRecommend === 1)
-          let currentItem = recommenItem.length ? recommenItem : item.list[0]
+          let currentItem = recommenItem.length
+            ? recommenItem[0]
+            : item.list[0]
           selectIds.push(currentItem.id)
           if (item.type === 0) {
             skuPrice = currentItem.secondName
@@ -246,91 +310,103 @@
         this.specSelect = selectIds
         this.spec = spec
         wx.hideLoading()
-      }).catch(err => {
+      })
+      .catch(err => {
         console.log(err)
         wx.hideLoading()
       })
+  },
+  methods: {
+    handleToShare () {
+      this.$refs.share.handleOpenShare()
     },
-    methods: {
-      getPhoneNumber (e) {
-        const { errMsg, encryptedData, iv } = e.$wx.detail
-        if (errMsg === 'getPhoneNumber:ok') {
-          this.handleAuthPhone(encryptedData, iv)
-        }
-      },
-      async handleAuthPhone (encryptedData, iv) {
-        const opts = {
-          encryptedData,
-          iv,
-          authPhone: true
-        }
-        await wxHttp.login(opts)
-        this.authStatus = 'hide'
-      },
-      ...mapMutations({
-        updateKey: 'updateKey'
-      }),
-      async handleToMake () {
-        const { currentScanData, currentSkuData } = this
-        if (!currentScanData) {
-          this.handleSearchScan()
-          return
-        }
-        if (!currentSkuData.length) {
-          this.isOpenSku = true
-          return
-        }
-        this.handleSettle()
-      },
-      handleSettle () {
-        const { currentScanData, currentSkuData, num, specSelect } = this
+    getPhoneNumber (e) {
+      const { errMsg, encryptedData, iv } = e.$wx.detail
+      if (errMsg === 'getPhoneNumber:ok') {
+        this.handleAuthPhone(encryptedData, iv)
+      }
+    },
+    async handleAuthPhone (encryptedData, iv) {
+      const opts = {
+        encryptedData,
+        iv,
+        authPhone: true
+      }
+      await wxHttp.login(opts)
+      this.authStatus = 'hide'
+    },
+    ...mapMutations({
+      updateKey: 'updateKey'
+    }),
+    async handleToMake () {
+      const { currentScanData, currentSkuData } = this
+      if (!currentScanData) {
+        this.handleSearchScan()
+        return
+      }
+      if (!currentSkuData.length) {
+        this.isOpenSku = true
+        return
+      }
+      this.handleSettle()
+    },
+    async handleSettle () {
+      try {
+        const { currentScanData, num, specSelect } = this
         const args = {
           scanId: currentScanData.id,
           scanTime: currentScanData.scanTime,
           indexes: specSelect.join('_'),
           num
         }
-        wxutils.backOrNavigate('/pages/reserver?' + param(args))
-      },
-      handleToConfirm () {
-        let selecSkuName = []
-        this.spec.forEach((item, index) => {
-          let listItem = item.list.filter(_item => this.specSelect[index] === _item.id)[0]
-          selecSkuName.push(listItem.name)
-        })
-        this.currentSkuData = selecSkuName
-        this.isOpenSku = false
-        if (!this.currentScanData) {
-          this.handleSearchScan()
-        } else {
-          this.handleSettle()
-        }
-      },
-      handleSearchScan () {
-        wxutils.backOrNavigate('/pages/selectFootShapeList')
-      },
-      changeQty (e) {
-        const { value } = e.$wx.detail
-        this.num = value
-      },
-      // 规格选择
-      handleToSelect (index, item, _item) {
-        this.$set(this.specSelect, index, _item.id)
-        if (item.type === 0) { // 人群
-          this.skuPrice = _item.secondName
-        }
-      },
-      handleTouch () {
-        return true
-      },
-      imageLoad (e) {
-        const { width, height } = e.$wx.detail
-        let imageSize = imageUtil.imageZoomHeightUtil(width, height)
-        this.imageWidth = imageSize.imageWidth
-        this.imageHeight = imageSize.imageHeight
+        await wxApi.postAddCart(args)
+        wxutils.backOrNavigate('/pages/reserver')
+      } catch (error) {
+        console.log(error)
       }
+    },
+    handleToConfirm () {
+      let selecSkuName = []
+      this.spec.forEach((item, index) => {
+        let listItem = item.list.filter(
+          _item => this.specSelect[index] === _item.id
+        )[0]
+        selecSkuName.push(listItem.name)
+      })
+      this.currentSkuData = selecSkuName
+      this.isOpenSku = false
+      if (!this.currentScanData) {
+        this.handleSearchScan()
+      } else {
+        this.handleSettle()
+      }
+    },
+    handleSearchScan () {
+      wxutils.backOrNavigate('/pages/selectFootShapeList')
+    },
+    changeQty (e) {
+      const { value } = e.$wx.detail
+      this.num = value
+    },
+    // 规格选择
+    handleToSelect (index, item, _item) {
+      this.$set(this.specSelect, index, _item.id)
+      if (item.type === 0) {
+        // 人群
+        this.skuPrice = _item.secondName
+      }
+    },
+    handleTouch () {
+      return true
+    },
+    imageLoad (e) {
+      const { width, height } = e.$wx.detail
+      let imageSize = imageUtil.imageZoomHeightUtil(width, height)
+      this.imageWidth = imageSize.imageWidth
+      this.imageHeight = imageSize.imageHeight
     }
-  })
+  }
+})
 </script>
 <style lang="less">
 .order-page {
@@ -339,7 +415,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #E7E7E7;
+  background-color: #e7e7e7;
   &__banner {
     position: relative;
     height: 618rpx;
@@ -360,7 +436,7 @@
       margin-top: 30rpx;
       .price {
         font-size: 36rpx;
-        color: #E1116A;
+        color: #e1116a;
         display: inline-block;
         margin-right: 32rpx;
       }
@@ -369,7 +445,7 @@
         position: relative;
         display: inline-block;
         color: #999;
-        &:before{
+        &:before {
           content: '';
           position: absolute;
           width: 100%;
@@ -394,7 +470,7 @@
     &__hd {
       position: absolute;
       left: 0;
-      color: #ACACAC;
+      color: #acacac;
       width: 162rpx;
       text-align: right;
     }
@@ -428,8 +504,8 @@
       }
       &__panle.active {
         font-size: 30rpx;
-        border-bottom: 4rpx solid #0753FE;
-        font-weight:bold;
+        border-bottom: 4rpx solid #0753fe;
+        font-weight: bold;
         border-radius: 4rpx;
       }
     }
@@ -475,7 +551,7 @@
           right: 10rpx;
           padding: 2rpx 8rpx;
           min-width: 22rpx;
-          background-color: #6594E9;
+          background-color: #6594e9;
           color: #fff;
           border-radius: 22rpx;
           text-align: center;
@@ -524,12 +600,12 @@
       position: fixed;
       top: 0;
       right: 0;
-      background-color: #fff; 
+      background-color: #fff;
     }
     .silder-container {
       width: 580rpx;
       height: 100%;
-      background-color: #fff; 
+      background-color: #fff;
       position: absolute;
       top: 0;
       bottom: 0;
@@ -544,12 +620,12 @@
           margin-right: 26rpx;
         }
         &__info {
-          display:flex;
-          flex-direction:column;
-          justify-content:flex-end;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-end;
           .color-price {
             font-size: 36rpx;
-            color: #E1116A;
+            color: #e1116a;
             font-weight: 600;
           }
         }
@@ -566,7 +642,9 @@
           display: flex;
           flex-wrap: wrap;
           .spec-item {
-            &-0, &-1, &-2 {
+            &-0,
+            &-1,
+            &-2 {
               width: 170rpx;
               height: 60rpx;
               line-height: 60rpx;
@@ -620,12 +698,12 @@
           margin-right: 20rpx;
         }
       }
-      .btn-wrap{
+      .btn-wrap {
         position: fixed;
         bottom: 0;
         padding: 24rpx 0 60rpx 56rpx;
         z-index: 102;
-        background-color: #fff; 
+        background-color: #fff;
         .btn {
           width: 470rpx;
           height: 80rpx;
@@ -643,7 +721,7 @@
   .scan-list {
     position: relative;
     min-height: 100vh;
-    background: rgba(238,238,238,1);
+    background: rgba(238, 238, 238, 1);
   }
   .auth-container {
     width: 750rpx;
@@ -661,11 +739,11 @@
         button {
           height: 80rpx;
           line-height: 80rpx;
-          border:none;
+          border: none;
           font-size: 36rpx;
           color: #fff;
-          background-color:rgba(26,93,225,1);
-          border-radius:40rpx;
+          background-color: rgba(26, 93, 225, 1);
+          border-radius: 40rpx;
         }
       }
       .auth-tip {

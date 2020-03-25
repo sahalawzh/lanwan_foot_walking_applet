@@ -2,9 +2,7 @@ import http from '../common/http'
 import eventHub from '../common/eventHub'
 import wxApi from '../api/wxApi'
 
-
 export default class wxHttp {
-
   static waitSendQues = []
   static loginStatus = 0
   static authPhone = 0
@@ -50,7 +48,7 @@ export default class wxHttp {
     const wxData = err.data
     if (wxData) {
       const {msg, code} = wxData
-      error.code = code 
+      error.code = code
       error.msg = msg
     }
     return error
@@ -181,6 +179,7 @@ export default class wxHttp {
             })
           }
         } catch (e) {
+          // console.log(e)
           wx.hideLoading()
           if (!e) return
           if (e.status === 401) {

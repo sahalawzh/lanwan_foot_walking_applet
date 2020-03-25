@@ -42,7 +42,7 @@
           this.totalPrice = res
           wx.hideLoading()
         } catch (error) {
-          console.log(err)
+          console.log(error)
           wx.hideLoading()
         }
       }
@@ -109,5 +109,3 @@
   }
 }
 </style>
-
-

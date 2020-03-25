@@ -6,7 +6,7 @@
           <image class="product-img" src="{{ item.image }}"></image>
           <div class="product-content">
             <elip line="1" class="product-name">{{ item.name }}</elip>
-            
+
             <div class="product-price">￥{{ item.price }} <text class="product-unit">x{{ item.num }}</text></div>
             <div class="user-name">{{ item.consignee }}<text class="time">{{ item.scanTime }}</text></div>
             <div class="spec-list">
@@ -23,7 +23,7 @@
             <div class="order-info__price">￥{{ item.totalPrice }}</div>
           </div>
           <div class="order-status">
-            
+
             <image class="icon-status" v-if="item.orderProcess >= 0" src="../images/ico_status_{{item.orderProcess}}.png" mode="aspectFill"></image>
 
             <div class="order-btn">
@@ -52,7 +52,7 @@
 
   wepy.page({
     config: {
-      navigationBarTitleText: '注册/绑定'
+      navigationBarTitleText: '我的订单'
     },
     data: {
       orderProcess: '-1',

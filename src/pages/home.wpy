@@ -1,19 +1,30 @@
 <template>
   <div class="home-page">
     <div class="home-page__banner">
-      <image class="xiedian" src="{{ productImg.image }}"></image>
-      
-      <navigator open-type="switchTab" url="./onlineOrder" class="online-order">在线下单</navigator>
+      <image class="xiedian"
+             src="{{ productImg.image }}"></image>
+
+      <navigator open-type="switchTab"
+                 url="./onlineOrder"
+                 class="online-order">在线下单</navigator>
     </div>
 
     <div class="home-page__list">
       <div class="cell-title">
-        <image class="cell-title__location" src="../images/location.png" @tap.stop="handleToChooseCity"></image>
-        <div class="cell-title__address" @tap.stop="handleToChooseCity">{{ currentCity }}</div>
-        <div class="cell-title__tip" @tap.stop="handleToChooseCity">当前定位城市</div>
-        <div class="cell-title__footer" @tap.stop="handleToChooseCity">更多测量点</div>
+        <image class="cell-title__location"
+               src="../images/location.png"
+               @tap.stop="handleToChooseCity"></image>
+        <div class="cell-title__address"
+             @tap.stop="handleToChooseCity">{{ currentCity }}</div>
+        <div class="cell-title__tip"
+             @tap.stop="handleToChooseCity">当前定位城市</div>
+        <div class="cell-title__footer"
+             @tap.stop="handleToChooseCity">更多测量点</div>
       </div>
-      <div class="cell-list" v-for="item in locationList" :key="item" @tap="handleOpenShop(item)">
+      <div class="cell-list"
+           v-for="item in locationList"
+           :key="item"
+           @tap="handleOpenShop(item)">
         <div class="cell-list__header">
           <div class="tag">{{ item.tag }}</div>
           <div class="company-name">{{ item.companyName }}</div>
@@ -21,11 +32,13 @@
         </div>
         <div class="cell-list__content">
           <div class="list">
-            <image class="icon" src="../images/clock.png"></image>
+            <image class="icon"
+                   src="../images/clock.png"></image>
             <div class="info">{{ item.time }}</div>
           </div>
           <div class="list">
-            <image class="icon" src="../images/location-gray.png"></image>
+            <image class="icon"
+                   src="../images/location-gray.png"></image>
             <div class="info">{{ item.address }}</div>
             <div class="list-footer">查看详情</div>
           </div>
@@ -156,14 +169,13 @@
       }
     }
   })
-  
+
 </script>
 <config>
 {
   navigationBarTitleText: '足部检测',
   enablePullDownRefresh: true,
   usingComponents: {
-    "lxzw-stepper": '~@/packages/stepper/index',
     "custom-tabbar": '~@/customTabBar/index'
   }
 }
@@ -175,7 +187,7 @@
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background-color: #E7E7E7;
+  background-color: #e7e7e7;
   &__banner {
     position: relative;
     height: 618rpx;
@@ -187,7 +199,7 @@
       position: absolute;
       left: 50rpx;
       top: 176rpx;
-      background-color: #1A61CD;
+      background-color: #1a61cd;
       width: 204rpx;
       height: 70rpx;
       line-height: 70rpx;
@@ -212,7 +224,7 @@
         padding-right: 21rpx;
       }
       &__address {
-        color: #1A61CD;
+        color: #1a61cd;
         font-size: 30rpx;
         padding-right: 32rpx;
       }
@@ -243,7 +255,7 @@
           color: #fff;
           text-align: center;
           border-radius: 12rpx;
-          background-color: #1EB1EF;
+          background-color: #1eb1ef;
           display: inline-block;
           font-size: 24rpx;
         }
@@ -270,7 +282,7 @@
             position: absolute;
             right: 0;
             bottom: 0;
-            color: #1A61CD;
+            color: #1a61cd;
             font-size: 24rpx;
           }
         }

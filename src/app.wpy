@@ -7,12 +7,12 @@
   justify-content: space-between;
   box-sizing: border-box;
 }
-.open-type-btn{
+.open-type-btn {
   padding-left: 0;
   padding-right: 0;
   line-height: normal;
   background-color: inherit;
-  &::after{
+  &::after {
     border: none;
   }
 }
@@ -36,21 +36,18 @@
 </style>
 
 <script>
-import wepy from '@wepy/core';
-import eventHub from './common/eventHub';
-import vuex from '@wepy/x';
-import wxHttp from './api/wxHttp'
+import wepy from '@wepy/core'
+import vuex from '@wepy/x'
 
-wepy.use(vuex);
-
+wepy.use(vuex)
 
 wepy.app({
   hooks: {
     // App 级别 hook，对整个 App 生效
     // 同时存在 Page hook 和 App hook 时，优先执行 Page hook，返回值再交由 App hook 处
-    'before-setData': function (dirty) {
+    'before-setData': function(dirty) {
       // console.log('setData dirty: ', dirty);
-      return dirty;
+      return dirty
     }
   },
   globalData: {
@@ -60,35 +57,40 @@ wepy.app({
       backgroundColor: '#ffffff',
       color: '#666',
       selectedColor: '#1A61CD',
-      list: [{
-        'iconPath': '../images/home.png',
-        'selectedIconPath': '../images/home_active.png',
-        'pagePath': '/pages/onlineOrder',
-        'text': '我要定制'
-      }, {
-        'iconPath': '../images/shuju.png',
-        'selectedIconPath': '../images/shuju_active.png',
-        'pagePath': '/pages/footShapeList',
-        'text': '我的足型'
-      }, {
-        'iconPath': '../images/wuxiansanwei.png',
-        'selectedIconPath': '../images/wuxiansanwei_active.png',
-        'pagePath': '/pages/home',
-        'text': "足部检测"
-      }, {
-        'iconPath': '../images/wode.png',
-        'selectedIconPath': '../images/wode_active.png',
-        'pagePath': '/pages/mine',
-        'text': '个人中心'
-      }]
-    },
+      list: [
+        {
+          iconPath: '../images/home.png',
+          selectedIconPath: '../images/home_active.png',
+          pagePath: '/pages/onlineOrder',
+          text: '我要定制'
+        },
+        {
+          iconPath: '../images/shuju.png',
+          selectedIconPath: '../images/shuju_active.png',
+          pagePath: '/pages/footShapeList',
+          text: '我的足型'
+        },
+        {
+          iconPath: '../images/wuxiansanwei.png',
+          selectedIconPath: '../images/wuxiansanwei_active.png',
+          pagePath: '/pages/home',
+          text: '足部检测'
+        },
+        {
+          iconPath: '../images/wode.png',
+          selectedIconPath: '../images/wode_active.png',
+          pagePath: '/pages/mine',
+          text: '个人中心'
+        }
+      ]
+    }
   },
 
   onLaunch() {
     // wx.hideTabBar()
     const that = this
     wx.getSystemInfo({
-      success({windowWidth, windowHeight, pixelRatio, system, model}) {
+      success({ windowWidth, windowHeight, pixelRatio, system, model }) {
         that.$options.globalData.isModelIPX = model === 'iPhone X'
       }
     })
@@ -97,11 +99,11 @@ wepy.app({
       this.$options.globalData.userInfo = userInfo
     }
   },
-  onShow () {
+  onShow() {
     // wx.hideTabBar()
   },
   methods: {
-    editTabbar () {
+    editTabbar() {
       let tabbar = this.$options.globalData.tabBar
       let pagePath = this.$route.path
       if (pagePath.indexOf('/') !== 0) {
@@ -114,7 +116,7 @@ wepy.app({
         }
       }
       this.$options.globalData.tabBar = tabbar
-    },
+    }
     // sleep (s) {
     //   return new Promise((resolve, reject) => {
     //     setTimeout(() => {
@@ -127,7 +129,7 @@ wepy.app({
     //   console.log(d);
     // }
   }
-});
+})
 </script>
 <config>
 {
