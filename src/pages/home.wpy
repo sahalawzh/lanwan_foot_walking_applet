@@ -174,7 +174,6 @@
 <config>
 {
   navigationBarTitleText: '足部检测',
-  enablePullDownRefresh: true,
   usingComponents: {
     "custom-tabbar": '~@/customTabBar/index'
   }
